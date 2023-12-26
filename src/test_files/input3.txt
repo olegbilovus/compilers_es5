@@ -15,5 +15,5 @@ endproc
 var s ^= "multiple
   lines
   string";
-s ^= "string";
-s^= "hello";\
+s2 ^= "string";
+s3^= "hello";\

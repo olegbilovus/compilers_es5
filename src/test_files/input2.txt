@@ -47,3 +47,8 @@ func f(a: integer, b: string) -> real, boolean:
   c ^= b;
   return a, true;
 endfunc
+
+func bol() -> boolean:
+  var boool: string;\
+  return true;
+endfunc

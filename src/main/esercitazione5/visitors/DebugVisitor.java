@@ -1,6 +1,5 @@
 package main.esercitazione5.visitors;
 
-import java.util.List;
 import main.esercitazione5.StringTable;
 import main.esercitazione5.Utility;
 import main.esercitazione5.ast.ConstValue;
@@ -45,12 +44,11 @@ import main.esercitazione5.ast.nodes.stat.Stat;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
 
-public class DebugVisitor implements Visitor<String> {
+public class DebugVisitor extends Visitor<String> {
 
-  private final StringTable stringTable;
 
   public DebugVisitor(StringTable stringTable) {
-    this.stringTable = stringTable;
+    super(stringTable);
   }
 
   @Override public String visit(IdNode v) {
@@ -431,22 +429,6 @@ public class DebugVisitor implements Visitor<String> {
       toReturn.append(v.getBody().accept(this));
     }
 
-    return toReturn.toString();
-  }
-
-  @Override public String st(IdNode id) {
-    return stringTable.get(id.getId());
-  }
-
-  @Override public String st(Integer id) {
-    return stringTable.get(id);
-  }
-
-  @Override public String st(List<IdNode> ids) {
-    StringBuilder toReturn = new StringBuilder();
-    for (IdNode i : ids) {
-      toReturn.append(stringTable.get(i.getId()));
-    }
     return toReturn.toString();
   }
 }

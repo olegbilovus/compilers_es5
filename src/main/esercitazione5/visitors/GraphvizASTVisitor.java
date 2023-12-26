@@ -45,14 +45,13 @@ import main.esercitazione5.ast.nodes.stat.Stat;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
 
-public class GraphvizASTVisitor implements Visitor<String> {
+public class GraphvizASTVisitor extends Visitor<String> {
 
-  private final StringTable stringTable;
   private int nodeNum = 0;
   private int parentNodeNum = 0;
 
   public GraphvizASTVisitor(StringTable stringTable) {
-    this.stringTable = stringTable;
+    super(stringTable);
   }
 
   @Override public String visit(IdNode v) {
@@ -373,22 +372,6 @@ public class GraphvizASTVisitor implements Visitor<String> {
     genNode(toReturn, v.getCondition());
     genNode(toReturn, v.getBody());
 
-    return toReturn.toString();
-  }
-
-  @Override public String st(IdNode id) {
-    return stringTable.get(id.getId());
-  }
-
-  @Override public String st(Integer id) {
-    return stringTable.get(id);
-  }
-
-  @Override public String st(List<IdNode> ids) {
-    StringBuilder toReturn = new StringBuilder();
-    for (IdNode i : ids) {
-      toReturn.append(stringTable.get(i.getId()));
-    }
     return toReturn.toString();
   }
 

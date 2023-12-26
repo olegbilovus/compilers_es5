@@ -1,6 +1,7 @@
 package main.esercitazione5.visitors;
 
 import java.util.List;
+import main.esercitazione5.StringTable;
 import main.esercitazione5.ast.nodes.BodyOP;
 import main.esercitazione5.ast.nodes.FunOP;
 import main.esercitazione5.ast.nodes.IdNode;
@@ -38,84 +39,100 @@ import main.esercitazione5.ast.nodes.stat.ReturnOP;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
 
-public interface Visitor<T> {
+public abstract class Visitor<T> {
 
-  T visit(IdNode v);
+  protected StringTable stringTable;
 
-  T visit(ProgramOP v);
+  Visitor(StringTable stringTable) {
+    this.stringTable = stringTable;
+  }
 
-  T visit(VarDeclOP v);
+  public abstract T visit(IdNode v);
 
-  T visit(FunOP v);
+  public abstract T visit(ProgramOP v);
 
-  T visit(ProcOP v);
+  public abstract T visit(VarDeclOP v);
 
-  T visit(ProcFunParamOP v);
+  public abstract T visit(FunOP v);
 
-  T visit(BodyOP v);
+  public abstract T visit(ProcOP v);
 
-  T visit(AddOP v);
+  public abstract T visit(ProcFunParamOP v);
 
-  T visit(MulOP v);
+  public abstract T visit(BodyOP v);
 
-  T visit(DiffOP v);
+  public abstract T visit(AddOP v);
 
-  T visit(DivOP v);
+  public abstract T visit(MulOP v);
 
-  T visit(AndOP v);
+  public abstract T visit(DiffOP v);
 
-  T visit(OrOP v);
+  public abstract T visit(DivOP v);
 
-  T visit(GTOP v);
+  public abstract T visit(AndOP v);
 
-  T visit(GEOP v);
+  public abstract T visit(OrOP v);
 
-  T visit(LTOP v);
+  public abstract T visit(GTOP v);
 
-  T visit(LEOP v);
+  public abstract T visit(GEOP v);
 
-  T visit(EQOP v);
+  public abstract T visit(LTOP v);
 
-  T visit(NEOP v);
+  public abstract T visit(LEOP v);
 
-  T visit(UminusOP v);
+  public abstract T visit(EQOP v);
 
-  T visit(NotOP v);
+  public abstract T visit(NEOP v);
 
-  T visit(IntegerConstExpr v);
+  public abstract T visit(UminusOP v);
 
-  T visit(RealConstExpr v);
+  public abstract T visit(NotOP v);
 
-  T visit(StringConstExpr v);
+  public abstract T visit(IntegerConstExpr v);
 
-  T visit(TrueConstExpr v);
+  public abstract T visit(RealConstExpr v);
 
-  T visit(FalseConstExpr v);
+  public abstract T visit(StringConstExpr v);
 
-  T visit(CallFunOP v);
+  public abstract T visit(TrueConstExpr v);
 
-  T visit(CallProcOP v);
+  public abstract T visit(FalseConstExpr v);
 
-  T visit(IdNodeExpr v);
+  public abstract T visit(CallFunOP v);
 
-  T visit(ReturnOP v);
+  public abstract T visit(CallProcOP v);
 
-  T visit(AssignOP v);
+  public abstract T visit(IdNodeExpr v);
 
-  T visit(WriteOP v);
+  public abstract T visit(ReturnOP v);
 
-  T visit(ReadOP v);
+  public abstract T visit(AssignOP v);
 
-  T visit(WhileOP v);
+  public abstract T visit(WriteOP v);
 
-  T visit(IfOP v);
+  public abstract T visit(ReadOP v);
 
-  T visit(ElifOP v);
+  public abstract T visit(WhileOP v);
 
-  T st(IdNode v);
+  public abstract T visit(IfOP v);
 
-  T st(Integer v);
+  public abstract T visit(ElifOP v);
 
-  T st(List<IdNode> ids);
+  public String st(IdNode id) {
+    return stringTable.get(id.getId());
+  }
+
+  public String st(Integer id) {
+    return stringTable.get(id);
+  }
+
+  public String st(List<IdNode> ids) {
+    StringBuilder toReturn = new StringBuilder();
+    for (IdNode i : ids) {
+      toReturn.append(stringTable.get(i.getId()));
+    }
+    return toReturn.toString();
+  }
 
 }
