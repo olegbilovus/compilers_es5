@@ -1,0 +1,105 @@
+proc main():
+  var legal ^= false;\
+  var op: integer;
+  i1, i2: integer;
+  r1, r2: real;
+  format ^= 1;\
+
+  while !legal do
+    <-- "Scegli l'operazione: " + "1. +," + "2. -," + "3. *" + "4. /" $(op);
+    if op >= 1 && op <= 4 then
+      <-- "Formato: " + "1. integer" + "2. real" $(formato);
+      if format = 1 || format = 2 then
+        --> "Inserisci il primo numero:";
+        if format = 1 then
+          <-- $(i1);
+        else
+          <-- $(r1);
+        endif;
+        --> "Inserisci il secondo numero";
+        if format = 1 then
+          <-- $(i2);
+        else
+          <-- $(r2);
+        endif;
+        legal ^= true;
+      else
+        -->! $(formato) "non è un formato valido";
+      endif;
+    else
+      -->! $(op) "non è una operazione valida";
+    endif;
+  endwhile;
+
+  var ires: integer;
+  rres: real;\
+
+  % integer %
+  if format = 1 then
+    if op = 1 then
+      ires ^= isomma(i1, i2);
+    elseif op = 2 then
+      ires ^= idiff(i1, i2);
+    elseif op = 3 then
+      ires ^= imul(i1, i2);
+    else
+      ires ^= idiv(i1, i2);
+    endif;
+  % real %
+  else
+    if op = 1 then
+      rsomma(r1, r2, @rres);
+    elseif op = 2 then
+      rdiffr(i1, r2, @rres);
+    elseif op = 3 then
+      rmul(r1, r2, @rres);
+    else
+      rdiv(r1, r2, @rres);
+    endif;
+  endif;
+
+  --> "Risultato:";
+  if format = 1 then
+    -->! $(ires);
+  else
+    -->! $(rres);
+  endif;
+
+endproc
+
+
+func isomma(i1: integer, i2: integer) -> integer:
+  return i1 + i2;
+endfunc
+
+proc rsomma(r1: real, r2: real, out res: real):
+  res ^= r1 + r2;
+endproc
+
+
+func idiff(i1: integer, i2: integer) -> integer:
+  return i1 - i2;
+endfunc
+
+proc rdiff(r1: real, r2: real, out res: real):
+  res ^= r1 - r2;
+endproc
+
+
+func imul(i1: integer, i2: integer) -> integer:
+  return i1 * i2;
+endfunc
+
+proc rmul(r1: real, r2: real, out res: real):
+  res ^= r1 * r2;
+endproc
+
+
+func idiv(i1: integer, i2: integer) -> integer:
+  return i1 / i2;
+endfunc
+
+proc rdiv(r1: real, r2: real, out res: real):
+  res ^= r1 / r2;
+endproc
+

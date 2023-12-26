@@ -1,0 +1,19 @@
+var a ^= 3;\
+var c ^= 3.4;\
+% this is a comment %
+var e ^= "hello";\
+
+proc main():
+% this is
+  a multiple
+  lines
+  comment
+%
+  var b: real;\
+endproc
+
+var s ^= "multiple
+  lines
+  string";
+s ^= "string";
+s^= "hello";\

@@ -1,0 +1,49 @@
+var s, s1: string;\
+var a ^= 3;
+c, b: boolean;\
+
+
+proc main(v: string, n: integer):
+  var b: real; s: string;\
+  s ^= "hello" + "world";
+  res ^= f(4+5, a>=b);
+  p(@b, s);
+
+  --> "Input is " $(i+1) "\nThanks";
+  -->! "Hello" + "World" + "!!";
+  <-- "Enter input:" + "\n" $(i) "Done";
+
+  while true do
+    b ^= a + 4;
+  endwhile;
+endproc
+
+proc p(out a: integer, b: boolean):
+  var c, e ^= 4, 5;
+  r: boolean;\
+
+  if b then
+    a ^= (4 + 5) * 7;
+    c ^= a > 5;
+  elseif !r then
+    a ^= 7 * -4;
+  else
+    a ^= 5;
+  endif;
+
+  while a <= 10 do
+    r ^= a * a;
+    a ^= a + 1;
+    v ^= 4 + a;
+    while true do
+      b ^= 4;
+    endwhile;
+  endwhile;
+endproc
+
+var d, e ^= 3.4, "hello";\
+
+func f(a: integer, b: string) -> real, boolean:
+  c ^= b;
+  return a, true;
+endfunc

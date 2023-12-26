@@ -1,0 +1,308 @@
+package main.esercitazione5;
+import main.esercitazione5.ast.*;
+import main.esercitazione5.ast.nodes.*;
+import main.esercitazione5.ast.nodes.expr.*;
+import main.esercitazione5.ast.nodes.stat.*;
+import java.util.ArrayList;
+import java.util.List;
+
+terminal VAR, ENDVAR, COLON, ASSIGN, SEMI, COMMA, TRUE, FALSE, REAL, INTEGER, STRING, BOOLEAN, RETURN,
+FUNCTION, TYPERETURN, ENDFUNCTION, LPAR, RPAR, PROCEDURE, ENDPROCEDURE, REF, OUT, WRITE, WRITERETURN,
+DOLLARSIGN, READ, IF, THEN, ELSE, ENDIF, ELIF, WHILE, DO, ENDWHILE, PLUS, MINUS, TIMES, DIV, EQ,
+NE, LT, LE, GT, GE, AND, OR, NOT;
+
+terminal Integer ID, STRING_CONST;
+terminal String REAL_CONST, INTEGER_CONST;
+
+nonterminal ProgramOP Program;
+nonterminal Iter Iter;
+nonterminal List<VarDeclOP> VarDecl, Decls;
+nonterminal FunOP Function;
+nonterminal ProcOP Procedure;
+nonterminal List<IdNode> Ids;
+nonterminal ConstValue Const;
+nonterminal List<ConstValue> Consts;
+nonterminal Type Type;
+nonterminal List<Type> Types;
+nonterminal List<ProcFunParamOP> FuncParams, ProcParams;
+nonterminal ProcFunParamOP ProcParamId;
+nonterminal BodyOP Body, Else;
+nonterminal Expr Expr, StringConCat;
+nonterminal List<Expr> Exprs, ProcExprs, OArgs, IArgs;
+nonterminal CallFunOP FunCall;
+nonterminal CallProcOP ProcCall;
+nonterminal Stat Stat;
+nonterminal WhileOP WhileStat;
+nonterminal IfOP IfStat;
+nonterminal ElifOP Elif;
+nonterminal List<ElifOP> Elifs;
+
+terminal UMINUS;
+precedence left NOT;
+precedence left AND, OR;
+precedence left GT, GE, LT, LE, EQ, NE;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIV;
+precedence left UMINUS;
+precedence left LPAR, RPAR;
+
+            // [There should be at least one Procedure called main]
+Program ::= Iter:i
+            {: RESULT = new ProgramOP(i.getVarDeclOPList(), i.getFunOPList(), i.getProcOPList()); :}
+;
+Iter ::= VarDecl:v Iter:i
+         {: RESULT = new Iter(v, i); :}
+       | VarDecl:v
+         {: RESULT = new Iter(v); :}
+       | Function:f Iter:i
+         {: RESULT = new Iter(f, i); :}
+       | Function:f
+         {: RESULT = new Iter(f); :}
+       | Procedure:p Iter:i
+         {: RESULT = new Iter(p, i); :}
+       | Procedure:p
+         {: RESULT = new Iter(p); :}
+;
+VarDecl ::= VAR Decls:d
+             {: RESULT = new ArrayList<VarDeclOP>(); RESULT.addAll(d); :}
+;
+Decls ::= Ids:ii COLON Type:t SEMI Decls:dd
+          {: RESULT = new ArrayList<VarDeclOP>(); RESULT.add(new VarDeclOP(ii, t)); RESULT.addAll(dd); :}
+        | Ids:ii COLON Type:t SEMI ENDVAR
+          {: RESULT = new ArrayList<VarDeclOP>(); RESULT.add(new VarDeclOP(ii, t)); :}
+        | Ids:ii ASSIGN Consts:cc SEMI Decls:dd
+          {: RESULT = new ArrayList<VarDeclOP>(); RESULT.add(new VarDeclOP(ii, cc)); RESULT.addAll(dd); :}
+        | Ids:ii ASSIGN Consts:cc SEMI ENDVAR
+          {: RESULT = new ArrayList<VarDeclOP>(); RESULT.add(new VarDeclOP(ii, cc)); :}
+;
+Ids ::= ID:i COMMA Ids:ii
+        {: RESULT = new ArrayList<IdNode>(); RESULT.add(new IdNode(i)); RESULT.addAll(ii); :}
+      | ID:i
+        {: RESULT = new ArrayList<IdNode>(); RESULT.add(new IdNode(i)); :}
+;
+Consts ::= Const:c COMMA Consts:cc
+           {: RESULT = new ArrayList<ConstValue>(); RESULT.add(c); RESULT.addAll(cc); :}
+         | Const:c
+           {: RESULT = new ArrayList<ConstValue>(); RESULT.add(c); :}
+;
+Const ::= REAL_CONST:c
+          {: RESULT = new ConstValue(Const.REAL_CONST, c); :}
+        | INTEGER_CONST:c
+          {: RESULT = new ConstValue(Const.INTEGER_CONST, c); :}
+        | STRING_CONST:i
+          {: RESULT = new ConstValue(Const.STRING_CONST, String.valueOf(i)); :}  // This saves the ID in the string table, not the string itself
+        | TRUE
+          {: RESULT = new ConstValue(Const.TRUE, null); :}
+        | FALSE
+          {: RESULT = new ConstValue(Const.FALSE, null); :}
+;
+Type ::= REAL
+         {: RESULT = Type.REAL; :}
+       | INTEGER
+         {: RESULT = Type.INTEGER; :}
+       | STRING
+         {: RESULT = Type.STRING; :}
+       | BOOLEAN
+         {: RESULT = Type.BOOLEAN; :}
+;
+             /* Function must have a Body because it has to return something and [the ReturnOP is in the Body] */
+Function ::= FUNCTION ID:i LPAR FuncParams:fp RPAR TYPERETURN Types:tt COLON Body:b ENDFUNCTION
+             {: RESULT = new FunOP(new IdNode(i), fp, tt, b); :}
+           | FUNCTION ID:i LPAR RPAR TYPERETURN Types:tt COLON Body:b ENDFUNCTION
+             {: RESULT = new FunOP(new IdNode(i), null, tt, b); :}
+;
+FuncParams ::= ID:i COLON Type:t COMMA FuncParams:ff
+               {: RESULT = new ArrayList<ProcFunParamOP>(); RESULT.add(new ProcFunParamOP(ParamAccess.IN, new IdNode(i), t)); RESULT.addAll(ff); :}
+             | ID:i COLON Type:t
+               {: RESULT = new ArrayList<ProcFunParamOP>(); RESULT.add(new ProcFunParamOP(ParamAccess.IN, new IdNode(i), t)); :}
+;
+Types ::= Type:t COMMA Types:tt
+          {: RESULT = new ArrayList<Type>(); RESULT.add(t); RESULT.addAll(tt); :}
+        | Type:t
+          {: RESULT = new ArrayList<Type>(); RESULT.add(t); :}
+;
+              /* [Proc can not have a ReturnOP in its BodyOP] */
+Procedure ::= PROCEDURE ID:i LPAR ProcParams:pp RPAR COLON Body:b ENDPROCEDURE
+              {: RESULT = new ProcOP(new IdNode(i), pp, b); :}
+            | PROCEDURE ID:i LPAR ProcParams:pp RPAR COLON ENDPROCEDURE
+              {: RESULT = new ProcOP(new IdNode(i), pp, null); :}
+            | PROCEDURE ID:i LPAR RPAR COLON Body:b ENDPROCEDURE
+              {: RESULT = new ProcOP(new IdNode(i), null, b); :}
+            | PROCEDURE ID:i LPAR RPAR COLON ENDPROCEDURE
+              {: RESULT = new ProcOP(new IdNode(i), null, null); :}
+;
+ProcParams::= ProcParamId:p COLON Type:t COMMA ProcParams:pp
+              {: RESULT = new ArrayList<ProcFunParamOP>(); p.setType(t); RESULT.add(p); RESULT.addAll(pp); :}
+            | ProcParamId:p COLON Type:t
+              {: RESULT = new ArrayList<ProcFunParamOP>(); p.setType(t); RESULT.add(p); :}
+;
+ProcParamId ::= ID:i
+                {: RESULT = new ProcFunParamOP(ParamAccess.INOUT, new IdNode(i), null); :}
+              | OUT ID:i
+                {: RESULT = new ProcFunParamOP(ParamAccess.OUT, new IdNode(i), null); :}
+;
+Body ::= VarDecl:v Body:b
+         {: b.getVarDeclOPList().addAll(0, v); RESULT = b; :}
+       | Stat:s Body:b
+         {: b.getStatList().add(0, s); RESULT = b; :}
+       | VarDecl:v
+         {: RESULT = new BodyOP(v); :}
+       | Stat:s
+         {: RESULT = new BodyOP(s); :}
+;
+Stat ::= Ids:ii ASSIGN Exprs:ee SEMI // [Ids should be the same number of Exprs, but and Expr can return more than one Expr, like a function can return multiple]
+         {: RESULT = new AssignOP(ii, ee); :}
+       | ProcCall:p SEMI
+         {: RESULT = p; :}
+       | RETURN Exprs:ee SEMI  // A ReturnOP must have at leat one Expr, no need a production RETURN SEMI
+         {: RESULT = new ReturnOP(ee); :}
+       | WRITE OArgs:ee SEMI
+         {: RESULT = new WriteOP(ee); :}
+       | WRITE SEMI
+         {: RESULT = new WriteOP(null); :}
+       | WRITERETURN OArgs:ee SEMI
+         {: RESULT = new WriteOP(ee, true); :}
+       | WRITERETURN SEMI
+         {: RESULT = new WriteOP(null, true); :}
+       | READ IArgs:ee SEMI
+         {: RESULT = new ReadOP(ee); :}
+       | READ SEMI
+         {: RESULT = new ReadOP(null); :}
+       | IfStat:f SEMI
+         {: RESULT = f; :}
+       | WhileStat:w SEMI
+         {: RESULT = w; :}
+;
+OArgs ::= StringConCat:e OArgs:ee
+           {: RESULT = new ArrayList<Expr>(); RESULT.add(e); RESULT.addAll(ee); :}
+         | StringConCat:e
+           {: RESULT = new ArrayList<Expr>(); RESULT.add(e); :}
+         | DOLLARSIGN LPAR Expr:e RPAR OArgs:ee
+           {: RESULT = new ArrayList<Expr>(); RESULT.add(e); RESULT.addAll(ee); :}
+         | DOLLARSIGN LPAR Expr:e RPAR
+           {: RESULT = new ArrayList<Expr>(); RESULT.add(e); :}
+;
+IArgs ::= StringConCat:e IArgs:ee
+          {: RESULT = new ArrayList<Expr>(); RESULT.add(e); RESULT.addAll(ee); :}
+        | StringConCat:e
+          {: RESULT = new ArrayList<Expr>(); RESULT.add(e); :}
+        | DOLLARSIGN LPAR ID:i RPAR IArgs:ee
+          {: RESULT = new ArrayList<Expr>(); RESULT.add(new IdNodeExpr(new IdNode(i))); RESULT.addAll(ee); :}
+        | DOLLARSIGN LPAR ID:i RPAR
+          {: RESULT = new ArrayList<Expr>(); RESULT.add(new IdNodeExpr(new IdNode(i))); :}
+;
+StringConCat ::= StringConCat:eL PLUS StringConCat:eR
+                 {: RESULT = new AddOP(eL, eR); :}
+               | STRING_CONST:i
+                 {: RESULT = new StringConstExpr(new ConstValue(Const.STRING_CONST, String.valueOf(i))); :}
+;
+FunCall ::= ID:i LPAR Exprs:ee RPAR
+            {: RESULT = new CallFunOP(new IdNode(i), ee); :}
+          | ID:i LPAR RPAR
+            {: RESULT = new CallFunOP(new IdNode(i)); :}
+;
+ProcCall ::= ID:i LPAR ProcExprs:ee RPAR
+             {: RESULT = new CallProcOP(new IdNode(i), ee); :}
+           | ID:i LPAR RPAR
+             {: RESULT = new CallProcOP(new IdNode(i)); :}
+;
+ProcExprs ::= Expr:e COMMA ProcExprs:ee
+              {: RESULT = new ArrayList<Expr>(); RESULT.add(e); RESULT.addAll(ee); :}
+            | Expr:e
+              {: RESULT = new ArrayList<Expr>(); RESULT.add(e); :}
+            | REF ID:i COMMA ProcExprs:ee
+              {: RESULT = new ArrayList<Expr>(); RESULT.add(new IdNodeExpr(new IdNode(i), true)); RESULT.addAll(ee); :}
+            | REF ID:i
+              {: RESULT = new ArrayList<Expr>(); RESULT.add(new IdNodeExpr(new IdNode(i), true)); :}
+;
+          /* [Expr only boolean] */
+IfStat ::= IF Expr:e THEN Body:b Elifs:efs Else:elb ENDIF
+           {: RESULT = new IfOP(e, b, efs, elb); :}
+         | IF Expr:e THEN Body:b Elifs:efs ENDIF
+           {: RESULT = new IfOP(e, b, efs, null); :}
+         | IF Expr:e THEN Body:b Else:elb ENDIF
+           {: RESULT = new IfOP(e, b, null, elb); :}
+         | IF Expr:e THEN Body:b ENDIF
+           {: RESULT = new IfOP(e, b, null, null); :}
+         | IF Expr:e THEN Elifs:efs Else:elb ENDIF
+           {: RESULT = new IfOP(e, null, efs, elb); :}
+         | IF Expr:e THEN Elifs:efs ENDIF
+           {: RESULT = new IfOP(e, null, efs, null); :}
+         | IF Expr:e THEN Else:elb ENDIF
+           {: RESULT = new IfOP(e, null, null, elb); :}
+         | IF Expr:e THEN ENDIF
+           {: RESULT = new IfOP(e, null, null, null); :}
+;
+Elifs ::= Elif:ef Elifs:efs
+          {: RESULT = new ArrayList<ElifOP>(); RESULT.add(ef); RESULT.addAll(efs); :}
+        | Elif:ef
+          {: RESULT = new ArrayList<ElifOP>(); RESULT.add(ef); :}
+;
+         /* [Expr only boolean] */
+Elif ::= ELIF Expr:e THEN Body:b
+         {: RESULT = new ElifOP(e, b); :}
+       | ELIF Expr:e THEN
+         {: RESULT = new ElifOP(e, null); :}
+;
+Else ::= ELSE Body:b
+         {: RESULT = b; :}
+       | ELSE
+         {: RESULT = null; :}
+;
+              /* [Expr only boolean] */
+WhileStat ::= WHILE Expr:e DO Body:b ENDWHILE
+              {: RESULT = new WhileOP(e, b); :}
+            | WHILE Expr:e DO ENDWHILE
+              {: RESULT = new WhileOP(e, null); :}
+;
+Exprs ::= Expr:e COMMA Exprs:ee
+          {: RESULT = new ArrayList<Expr>(); RESULT.add(e); RESULT.addAll(ee); :}
+        | Expr:e
+          {: RESULT = new ArrayList<Expr>(); RESULT.add(e); :}
+;
+Expr ::= FunCall:f
+         {: RESULT = f; :}
+       | REAL_CONST:c
+         {: RESULT = new RealConstExpr(new ConstValue(Const.REAL_CONST, c)); :}
+       | INTEGER_CONST:c
+         {: RESULT = new IntegerConstExpr(new ConstValue(Const.INTEGER_CONST, c)); :}
+       | STRING_CONST:i
+         {: RESULT = new StringConstExpr(new ConstValue(Const.STRING_CONST, String.valueOf(i))); :}
+       | ID:i
+         {: RESULT = new IdNodeExpr(new IdNode(i)); :}
+       | TRUE
+         {: RESULT = new TrueConstExpr(new ConstValue(Const.TRUE, null)); :}
+       | FALSE
+         {: RESULT = new FalseConstExpr(new ConstValue(Const.FALSE, null)); :}
+       | Expr:eL PLUS Expr:eR
+         {: RESULT = new AddOP(eL, eR); :}
+       | Expr:eL MINUS Expr:eR
+         {: RESULT = new DiffOP(eL, eR); :}
+       | Expr:eL TIMES Expr:eR
+         {: RESULT = new MulOP(eL, eR); :}
+       | Expr:eL DIV Expr:eR
+         {: RESULT = new DivOP(eL, eR); :}
+       | Expr:eL AND Expr:eR
+         {: RESULT = new AndOP(eL, eR); :}
+       | Expr:eL OR Expr:eR
+         {: RESULT = new OrOP(eL, eR); :}
+       | Expr:eL GT Expr:eR
+         {: RESULT = new GTOP(eL, eR); :}
+       | Expr:eL GE Expr:eR
+         {: RESULT = new GEOP(eL, eR); :}
+       | Expr:eL LT Expr:eR
+         {: RESULT = new LTOP(eL, eR); :}
+       | Expr:eL LE Expr:eR
+         {: RESULT = new LEOP(eL, eR); :}
+       | Expr:eL EQ Expr:eR
+         {: RESULT = new EQOP(eL, eR); :}
+       | Expr:eL NE Expr:eR
+         {: RESULT = new NEOP(eL, eR); :}
+       | LPAR Expr:e RPAR
+         {: RESULT = e; e.setInPar(true); :} // need this flag because the alternative in the generate code is to use always the pars
+       | NOT Expr:e
+         {: RESULT = new NotOP(e); :}
+       | MINUS Expr:e
+         {: RESULT = new UminusOP(e); :}
+         %prec UMINUS
+;
