@@ -1,7 +1,6 @@
 package test.java.lexer;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java_cup.runtime.Symbol;
 import main.esercitazione5.Yylex;
 import main.esercitazione5.sym;
@@ -13,14 +12,11 @@ public class IdTest {
 
   @Test
   public void valid() throws IOException {
-    StringReader source = new StringReader("a: integer;");
-    Yylex lexer = new Yylex(source);
-    Symbol token = lexer.next_token();
+    Symbol token = LexerUtility.token("a: integer;");
     Assertions.assertEquals(sym.ID, token.sym);
     Assertions.assertEquals(1, token.value);
 
-    source = new StringReader("a b");
-    lexer = new Yylex(source);
+    Yylex lexer = LexerUtility.lexer("a b");
     token = lexer.next_token();
     Assertions.assertEquals(sym.ID, token.sym);
     Assertions.assertEquals(1, token.value);
@@ -31,9 +27,7 @@ public class IdTest {
 
   @Test
   public void invalid() throws IOException {
-    StringReader source = new StringReader("4a ^= 4");
-    Yylex lexer = new Yylex(source);
-    Symbol token = lexer.next_token();
+    Symbol token = LexerUtility.token("4a ^= 4");
     Assertions.assertEquals(sym.INTEGER_CONST, token.sym);
   }
 }

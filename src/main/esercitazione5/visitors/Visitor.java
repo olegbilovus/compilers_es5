@@ -33,6 +33,7 @@ import main.esercitazione5.ast.nodes.expr.UminusOP;
 import main.esercitazione5.ast.nodes.stat.AssignOP;
 import main.esercitazione5.ast.nodes.stat.CallProcOP;
 import main.esercitazione5.ast.nodes.stat.ElifOP;
+import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
@@ -119,6 +120,8 @@ public abstract class Visitor<T> {
 
   public abstract T visit(ElifOP v);
 
+  public abstract T visit(ElseOP v);
+
   public String st(IdNode id) {
     return stringTable.get(id.getId());
   }
@@ -134,5 +137,4 @@ public abstract class Visitor<T> {
     }
     return toReturn.toString();
   }
-
 }

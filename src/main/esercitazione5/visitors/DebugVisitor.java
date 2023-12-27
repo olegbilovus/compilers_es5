@@ -37,6 +37,7 @@ import main.esercitazione5.ast.nodes.expr.UminusOP;
 import main.esercitazione5.ast.nodes.stat.AssignOP;
 import main.esercitazione5.ast.nodes.stat.CallProcOP;
 import main.esercitazione5.ast.nodes.stat.ElifOP;
+import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
@@ -411,9 +412,8 @@ public class DebugVisitor extends Visitor<String> {
       }
     }
 
-    if (v.getElseBody() != null) {
-      toReturn.append("else\n");
-      toReturn.append(v.getElseBody().accept(this));
+    if (v.getElse() != null) {
+      toReturn.append(v.getElse().accept(this));
     }
 
     toReturn.append("endif;");
@@ -424,6 +424,16 @@ public class DebugVisitor extends Visitor<String> {
   @Override public String visit(ElifOP v) {
     StringBuilder toReturn = new StringBuilder("elseif ");
     toReturn.append(v.getCondition().accept(this)).append(" then\n");
+
+    if (v.getBody() != null) {
+      toReturn.append(v.getBody().accept(this));
+    }
+
+    return toReturn.toString();
+  }
+
+  @Override public String visit(ElseOP v) {
+    StringBuilder toReturn = new StringBuilder("else\n ");
 
     if (v.getBody() != null) {
       toReturn.append(v.getBody().accept(this));

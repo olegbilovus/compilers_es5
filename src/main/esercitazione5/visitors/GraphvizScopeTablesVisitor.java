@@ -40,9 +40,11 @@ import main.esercitazione5.ast.nodes.expr.UminusOP;
 import main.esercitazione5.ast.nodes.stat.AssignOP;
 import main.esercitazione5.ast.nodes.stat.CallProcOP;
 import main.esercitazione5.ast.nodes.stat.ElifOP;
+import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
+import main.esercitazione5.ast.nodes.stat.Stat;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
 import main.esercitazione5.scope.ScopeEntry;
@@ -57,8 +59,6 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
   private final StringBuilder arrowsToReturn = new StringBuilder();
   private final StringBuilder arrowsRankToReturn = new StringBuilder();
   private int tableCount = 0;
-
-  private int noNameCount = 0;
 
   public GraphvizScopeTablesVisitor(StringTable stringTable) {
     super(stringTable);
@@ -87,8 +87,7 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
     }
     arrowsToReturn.append("}\n");
 
-    toReturn.append(arrowsToReturn).append(arrowsRankToReturn)
-        .append("\n}");
+    toReturn.append(arrowsToReturn).append(arrowsRankToReturn).append("\n}");
 
     return toReturn.toString();
   }
@@ -128,11 +127,21 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
   }
 
   @Override public String visit(ProcFunParamOP v) {
+    // it is already in the procedure table
     return "";
   }
 
   @Override public String visit(BodyOP v) {
-    return "";
+    StringBuilder toReturn = new StringBuilder();
+    // VarDecls are already in the parent table
+
+    if (!Utility.isListEmpty(v.getStatList())) {
+      for (Stat stat : v.getStatList()) {
+        toReturn.append(stat.accept(this));
+      }
+    }
+
+    return toReturn.toString();
   }
 
   @Override public String visit(AddOP v) {
@@ -240,15 +249,81 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
   }
 
   @Override public String visit(WhileOP v) {
-    return "";
+    // add VarDecls to table
+    StringBuilder toReturn = new StringBuilder();
+    stack.push(v.getScopeTable());
+    toReturn.append(genTable("", WhileOP.class, null));
+
+    // process body, arrows pushed later because need the prev arrows in the prev gen
+    arrows.push(new HashMap<>());
+    if (v.getBody() != null) {
+      toReturn.append(v.getBody().accept(this));
+    }
+    stack.pop();
+    arrows.pop();
+
+    return toReturn.toString();
   }
 
   @Override public String visit(IfOP v) {
-    return "";
+    // add VarDecls to table
+    StringBuilder toReturn = new StringBuilder();
+    stack.push(v.getScopeTable());
+    toReturn.append(genTable("", WhileOP.class, null));
+
+    // process body, arrows pushed later because need the prev arrows in the prev gen
+    arrows.push(new HashMap<>());
+    if (v.getBody() != null) {
+      toReturn.append(v.getBody().accept(this));
+    }
+    stack.pop();
+    arrows.pop();
+
+    if (!Utility.isListEmpty(v.getElifOPList())) {
+      for (ElifOP elifOP : v.getElifOPList()) {
+        toReturn.append(elifOP.accept(this));
+      }
+    }
+
+    if (v.getElse() != null) {
+      toReturn.append(v.getElse().accept(this));
+    }
+
+    return toReturn.toString();
   }
 
   @Override public String visit(ElifOP v) {
-    return "";
+    // add VarDecls to table
+    StringBuilder toReturn = new StringBuilder();
+    stack.push(v.getScopeTable());
+    toReturn.append(genTable("", ElifOP.class, null));
+
+    // process body, arrows pushed later because need the prev arrows in the prev gen
+    arrows.push(new HashMap<>());
+    if (v.getBody() != null) {
+      toReturn.append(v.getBody().accept(this));
+    }
+    stack.pop();
+    arrows.pop();
+
+    return toReturn.toString();
+  }
+
+  @Override public String visit(ElseOP v) {
+    // add VarDecls to table
+    StringBuilder toReturn = new StringBuilder();
+    stack.push(v.getScopeTable());
+    toReturn.append(genTable("", ElseOP.class, null));
+
+    // process body, arrows pushed later because need the prev arrows in the prev gen
+    arrows.push(new HashMap<>());
+    if (v.getBody() != null) {
+      toReturn.append(v.getBody().accept(this));
+    }
+    stack.pop();
+    arrows.pop();
+
+    return toReturn.toString();
   }
 
   private <T extends Node> void genList(StringBuilder toReturn, List<T> list) {
@@ -270,10 +345,8 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
       tableId = ++tableCount;
     }
     return "table" + tableId + "[ label=<\n"
-        + "<table border=\"0\" cellborder=\"1\" cellspacing=\"0\" cellpadding=\"4\">\n"
-        + "<tr>\n"
-        + "<td port=\"0\" colspan=\"3\">" + genTableName(name, claz) + "</td>\n"
-        + "</tr>\n";
+        + "<table border=\"0\" cellborder=\"1\" cellspacing=\"0\" cellpadding=\"4\">\n" + "<tr>\n"
+        + "<td port=\"0\" colspan=\"3\">" + genTableName(name, claz) + "</td>\n" + "</tr>\n";
   }
 
   private String genArrow(Integer id1, Integer entry1, Integer id2) {
@@ -286,14 +359,12 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
     int entryCounter = 0;
     int parentTableCount = tableCount;
     for (Entry<Integer, ScopeEntry> entry : scopeTable.getTable().entrySet()) {
-      toReturn.append("<tr>\n")
-          .append("<td ").append("port=\"").append(++entryCounter).append("\">")
-          .append(st(entry.getKey()))
-          .append("</td>\n");
+      toReturn.append("<tr>\n").append("<td ").append("port=\"").append(++entryCounter)
+          .append("\">").append(st(entry.getKey())).append("</td>\n");
 
       ScopeEntry scopeEntry = entry.getValue();
       switch (scopeEntry.getKind()) {
-        case FUN, PROC -> {
+        case FUN, PROC, IF, WHILE -> {
           arrowsToReturn.append(genArrow(parentTableCount, entryCounter, ++tableCount));
           arrows.getFirst().put(entry.getKey(), tableCount);
         }
@@ -301,8 +372,7 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
       }
 
       toReturn.append("<td ").append("port=\"").append(++entryCounter).append("\">")
-          .append(scopeEntry.getKind().name())
-          .append("</td>\n");
+          .append(scopeEntry.getKind().name()).append("</td>\n");
 
       boolean args = !Utility.isListEmpty(scopeEntry.getListType1());
       boolean returns = !Utility.isListEmpty(scopeEntry.getListType2());
@@ -314,8 +384,7 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
             if (scopeEntry.getKind() != ScopeKind.VAR) {
               toReturn.append(t.paramAccess().name()).append(":");
             }
-            toReturn.append(t.type().name())
-                .append(", ");
+            toReturn.append(t.type().name()).append(", ");
           }
           Utility.deleteLastCommaSpace(toReturn);
         }

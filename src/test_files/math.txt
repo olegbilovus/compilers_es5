@@ -8,7 +8,7 @@ proc main():
   while !legal do
     <-- "Scegli l'operazione: " + "1. +," + "2. -," + "3. *" + "4. /" $(op);
     if op >= 1 && op <= 4 then
-      <-- "Formato: " + "1. integer" + "2. real" $(formato);
+      <-- "Formato: " + "1. integer" + "2. real" $(format);
       if format = 1 || format = 2 then
         --> "Inserisci il primo numero:";
         if format = 1 then
@@ -24,7 +24,7 @@ proc main():
         endif;
         legal ^= true;
       else
-        -->! $(formato) "non è un formato valido";
+        -->! $(format) "non è un formato valido";
       endif;
     else
       -->! $(op) "non è una operazione valida";

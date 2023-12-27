@@ -12,14 +12,14 @@ public class IfOP extends Stat {
 
   private final List<ElifOP> elifOPList;
 
-  private final BodyOP elseBody;
+  private final ElseOP elseOP;
 
 
-  public IfOP(Expr condition, BodyOP body, List<ElifOP> elifOPList, BodyOP elseBody) {
+  public IfOP(Expr condition, BodyOP body, List<ElifOP> elifOPList, ElseOP elseOP) {
     this.condition = condition;
     this.body = body;
     this.elifOPList = elifOPList;
-    this.elseBody = elseBody;
+    this.elseOP = elseOP;
   }
 
   public Expr getCondition() {
@@ -34,8 +34,8 @@ public class IfOP extends Stat {
     return elifOPList;
   }
 
-  public BodyOP getElseBody() {
-    return elseBody;
+  public ElseOP getElse() {
+    return elseOP;
   }
 
   @Override public <T> T accept(Visitor<T> v) {

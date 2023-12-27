@@ -6,4 +6,8 @@ public class AlreadyDeclaredScopeException extends RuntimeException {
     super("'" + symbol + "' is already declared");
   }
 
+  public AlreadyDeclaredScopeException(String symbol, String code) {
+    super("'" + symbol + "' is already declared, error in '" + code + "'");
+  }
+
 }

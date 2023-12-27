@@ -26,7 +26,7 @@ nonterminal Type Type;
 nonterminal List<Type> Types;
 nonterminal List<ProcFunParamOP> FuncParams, ProcParams;
 nonterminal ProcFunParamOP ProcParamId;
-nonterminal BodyOP Body, Else;
+nonterminal BodyOP Body;
 nonterminal Expr Expr, StringConCat;
 nonterminal List<Expr> Exprs, ProcExprs, OArgs, IArgs;
 nonterminal CallFunOP FunCall;
@@ -35,6 +35,7 @@ nonterminal Stat Stat;
 nonterminal WhileOP WhileStat;
 nonterminal IfOP IfStat;
 nonterminal ElifOP Elif;
+nonterminal ElseOP Else;
 nonterminal List<ElifOP> Elifs;
 
 terminal UMINUS;
@@ -216,20 +217,20 @@ ProcExprs ::= Expr:e COMMA ProcExprs:ee
               {: RESULT = new ArrayList<Expr>(); RESULT.add(new IdNodeExpr(new IdNode(i), true)); :}
 ;
           /* [Expr only boolean] */
-IfStat ::= IF Expr:e THEN Body:b Elifs:efs Else:elb ENDIF
-           {: RESULT = new IfOP(e, b, efs, elb); :}
+IfStat ::= IF Expr:e THEN Body:b Elifs:efs Else:els ENDIF
+           {: RESULT = new IfOP(e, b, efs, els); :}
          | IF Expr:e THEN Body:b Elifs:efs ENDIF
            {: RESULT = new IfOP(e, b, efs, null); :}
-         | IF Expr:e THEN Body:b Else:elb ENDIF
-           {: RESULT = new IfOP(e, b, null, elb); :}
+         | IF Expr:e THEN Body:b Else:els ENDIF
+           {: RESULT = new IfOP(e, b, null, els); :}
          | IF Expr:e THEN Body:b ENDIF
            {: RESULT = new IfOP(e, b, null, null); :}
-         | IF Expr:e THEN Elifs:efs Else:elb ENDIF
-           {: RESULT = new IfOP(e, null, efs, elb); :}
+         | IF Expr:e THEN Elifs:efs Else:els ENDIF
+           {: RESULT = new IfOP(e, null, efs, els); :}
          | IF Expr:e THEN Elifs:efs ENDIF
            {: RESULT = new IfOP(e, null, efs, null); :}
-         | IF Expr:e THEN Else:elb ENDIF
-           {: RESULT = new IfOP(e, null, null, elb); :}
+         | IF Expr:e THEN Else:els ENDIF
+           {: RESULT = new IfOP(e, null, null, els); :}
          | IF Expr:e THEN ENDIF
            {: RESULT = new IfOP(e, null, null, null); :}
 ;
@@ -245,7 +246,7 @@ Elif ::= ELIF Expr:e THEN Body:b
          {: RESULT = new ElifOP(e, null); :}
 ;
 Else ::= ELSE Body:b
-         {: RESULT = b; :}
+         {: RESULT = new ElseOP(b); :}
        | ELSE
          {: RESULT = null; :}
 ;

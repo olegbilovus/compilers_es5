@@ -12,6 +12,7 @@ import main.esercitazione5.ast.Type;
 import main.esercitazione5.ast.nodes.BodyOP;
 import main.esercitazione5.ast.nodes.FunOP;
 import main.esercitazione5.ast.nodes.IdNode;
+import main.esercitazione5.ast.nodes.Node;
 import main.esercitazione5.ast.nodes.ProcFunParamOP;
 import main.esercitazione5.ast.nodes.ProcOP;
 import main.esercitazione5.ast.nodes.ProgramOP;
@@ -22,6 +23,7 @@ import main.esercitazione5.ast.nodes.expr.CallFunOP;
 import main.esercitazione5.ast.nodes.expr.DiffOP;
 import main.esercitazione5.ast.nodes.expr.DivOP;
 import main.esercitazione5.ast.nodes.expr.EQOP;
+import main.esercitazione5.ast.nodes.expr.Expr;
 import main.esercitazione5.ast.nodes.expr.FalseConstExpr;
 import main.esercitazione5.ast.nodes.expr.GEOP;
 import main.esercitazione5.ast.nodes.expr.GTOP;
@@ -40,6 +42,7 @@ import main.esercitazione5.ast.nodes.expr.UminusOP;
 import main.esercitazione5.ast.nodes.stat.AssignOP;
 import main.esercitazione5.ast.nodes.stat.CallProcOP;
 import main.esercitazione5.ast.nodes.stat.ElifOP;
+import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
@@ -63,41 +66,31 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
   }
 
   @Override public ScopeTable visit(IdNode v) {
+    // IdNode is used only for lookups. For adding to the table, other nodes have to do it
+    stack.getFirst().lookup(v.getId(), stringTable);
+
     return null;
   }
 
   @Override public ScopeTable visit(ProgramOP v) {
     ScopeTable scopeTable = new ScopeTable(null);
     v.setScopeTable(scopeTable);
-    stack.push(scopeTable);
 
-    if (!Utility.isListEmpty(v.getVarDeclOPList())) {
-      for (VarDeclOP varDeclOP : v.getVarDeclOPList()) {
-        varDeclOP.accept(this);
-      }
-    }
-
-    if (!Utility.isListEmpty(v.getFunOPList())) {
-      for (FunOP funOP : v.getFunOPList()) {
-        scopeTable.getNexts().add(funOP.accept(this));
-      }
-    }
-
-    if (!Utility.isListEmpty(v.getProcOPList())) {
-      for (ProcOP procOP : v.getProcOPList()) {
-        scopeTable.getNexts().add(procOP.accept(this));
-      }
-    }
+    nodeTableList(scopeTable, v.getVarDeclOPList());
+    nodeTableList(scopeTable, v.getFunOPList());
+    nodeTableList(scopeTable, v.getProcOPList());
 
     return scopeTable;
   }
 
   @Override public ScopeTable visit(VarDeclOP v) {
+    ScopeTable currentTable = stack.getFirst();
+
     if (v.getType() != null) {
       for (IdNode id : v.getIdList()) {
         ScopeEntry entry =
             new ScopeEntry(ScopeKind.VAR, new ScopeType(v.getType(), ParamAccess.IN));
-        stack.getFirst().add(id.getId(), entry, stringTable);
+        currentTable.add(id.getId(), entry, stringTable, v);
       }
     } else {
       if (v.getIdList().size() != v.getConstValueList().size()) {
@@ -108,7 +101,7 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
           int id = v.getIdList().get(i).getId();
           Type type = constTypeToType(v.getConstValueList().get(i).constType());
           ScopeEntry entry = new ScopeEntry(ScopeKind.VAR, new ScopeType(type, ParamAccess.IN));
-          stack.getFirst().add(id, entry, stringTable);
+          currentTable.add(id, entry, stringTable, v);
         }
       }
     }
@@ -116,135 +109,127 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
     return null;
   }
 
-  @Override public ScopeTable visit(FunOP v) {
-    // add the function to the GLOBALS
-    List<ScopeType> scopeTypesParam = new ArrayList<>();
-    if (!Utility.isListEmpty(v.getProcFunParamOPList())) {
-      for (ProcFunParamOP paramOP : v.getProcFunParamOPList()) {
-        scopeTypesParam.add(new ScopeType(paramOP.getType(), paramOP.getParamAccess()));
-      }
-    }
-    ScopeEntry funEntry = new ScopeEntry(ScopeKind.FUN, scopeTypesParam, v.getReturnTypes());
-    stack.getFirst().add(v.getId().getId(), funEntry, stringTable);
 
-    // create new scope for the function
+  @Override public ScopeTable visit(FunOP v) {
+
+    addSignatureToGlobals(v, ScopeKind.FUN, v.getId(), stack.getFirst(), v.getProcFunParamOPList(),
+        v.getReturnTypes());
+
     ScopeTable scopeTable = new ScopeTable(stack.getFirst());
     v.setScopeTable(scopeTable);
-    stack.getFirst().getNexts().add(scopeTable);
-    stack.push(scopeTable);
-
-    if (!Utility.isListEmpty(v.getProcFunParamOPList())) {
-      for (ProcFunParamOP paramOP : v.getProcFunParamOPList()) {
-        paramOP.accept(this);
-      }
-    }
-
-    v.getBodyOP().accept(this);
-    stack.pop();
+    nodeTableList(scopeTable, v.getProcFunParamOPList());
+    nodeTable(scopeTable, v.getBodyOP());
 
     return scopeTable;
   }
 
   @Override public ScopeTable visit(ProcOP v) {
-    // add the procedure to the GLOBALS
-    List<ScopeType> scopeTypesParam = new ArrayList<>();
-    if (!Utility.isListEmpty(v.getProcFunParamOPList())) {
-      for (ProcFunParamOP paramOP : v.getProcFunParamOPList()) {
-        scopeTypesParam.add(new ScopeType(paramOP.getType(), paramOP.getParamAccess()));
-      }
-    }
-    ScopeEntry funEntry = new ScopeEntry(ScopeKind.PROC, scopeTypesParam, null);
-    stack.getFirst().add(v.getId().getId(), funEntry, stringTable);
+    addSignatureToGlobals(v, ScopeKind.PROC, v.getId(), stack.getFirst(), v.getProcFunParamOPList(),
+        null);
 
-    // create new scope for the function
     ScopeTable scopeTable = new ScopeTable(stack.getFirst());
     v.setScopeTable(scopeTable);
-    stack.getFirst().getNexts().add(scopeTable);
-    stack.push(scopeTable);
-
-    if (!Utility.isListEmpty(v.getProcFunParamOPList())) {
-      for (ProcFunParamOP paramOP : v.getProcFunParamOPList()) {
-        paramOP.accept(this);
-      }
-    }
-
-    v.getBodyOP().accept(this);
-    stack.pop();
+    nodeTableList(scopeTable, v.getProcFunParamOPList());
+    nodeTable(scopeTable, v.getBodyOP());
 
     return scopeTable;
   }
 
+  private void addSignatureToGlobals(Node node, ScopeKind scopeKind, IdNode id,
+      ScopeTable scopeTable,
+      List<ProcFunParamOP> procFunParamOPList, List<Type> typeList) {
+
+    List<ScopeType> scopeTypesParam = new ArrayList<>();
+    if (!Utility.isListEmpty(procFunParamOPList)) {
+      for (ProcFunParamOP paramOP : procFunParamOPList) {
+        scopeTypesParam.add(new ScopeType(paramOP.getType(), paramOP.getParamAccess()));
+      }
+    }
+    ScopeEntry scopeEntry = new ScopeEntry(scopeKind, scopeTypesParam, typeList);
+    scopeTable.add(id.getId(), scopeEntry, stringTable, node);
+
+  }
+
   @Override public ScopeTable visit(ProcFunParamOP v) {
     stack.getFirst().add(v.getId().getId(),
-        new ScopeEntry(ScopeKind.VAR, new ScopeType(v.getType(), v.getParamAccess())), stringTable);
+        new ScopeEntry(ScopeKind.VAR, new ScopeType(v.getType(), v.getParamAccess())), stringTable,
+        v);
 
     return null;
   }
 
   @Override public ScopeTable visit(BodyOP v) {
+    // no need to create a table for BodyOP because entries need to be added to the parent table
+    visitNodeList(v.getVarDeclOPList());
+    visitNodeList(v.getStatList());
 
-    if (!Utility.isListEmpty(v.getVarDeclOPList())) {
-      for (VarDeclOP varDeclOP : v.getVarDeclOPList()) {
-        varDeclOP.accept(this);
-      }
-    }
+    return null;
+  }
+
+  private ScopeTable binaryOP(Expr v) {
+    visitNode(v.getExprRight());
+    visitNode(v.getExprLeft());
 
     return null;
   }
 
   @Override public ScopeTable visit(AddOP v) {
-    return null;
+    return binaryOP(v);
   }
 
   @Override public ScopeTable visit(MulOP v) {
-    return null;
+    return binaryOP(v);
   }
 
   @Override public ScopeTable visit(DiffOP v) {
-    return null;
+    return binaryOP(v);
   }
 
   @Override public ScopeTable visit(DivOP v) {
-    return null;
+    return binaryOP(v);
   }
 
   @Override public ScopeTable visit(AndOP v) {
-    return null;
+    return binaryOP(v);
   }
 
   @Override public ScopeTable visit(OrOP v) {
-    return null;
+    return binaryOP(v);
   }
 
   @Override public ScopeTable visit(GTOP v) {
-    return null;
+    return binaryOP(v);
   }
 
   @Override public ScopeTable visit(GEOP v) {
-    return null;
+    return binaryOP(v);
   }
 
   @Override public ScopeTable visit(LTOP v) {
-    return null;
+    return binaryOP(v);
   }
 
   @Override public ScopeTable visit(LEOP v) {
-    return null;
+    return binaryOP(v);
   }
 
   @Override public ScopeTable visit(EQOP v) {
-    return null;
+    return binaryOP(v);
   }
 
   @Override public ScopeTable visit(NEOP v) {
-    return null;
+    return binaryOP(v);
   }
 
   @Override public ScopeTable visit(UminusOP v) {
+    visitNode(v.getExprLeft());
+
     return null;
   }
 
   @Override public ScopeTable visit(NotOP v) {
+    visitNode(v.getExprLeft());
+
     return null;
   }
 
@@ -269,43 +254,90 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
   }
 
   @Override public ScopeTable visit(CallFunOP v) {
+    visitNodeList(v.getExprList());
+
     return null;
   }
 
   @Override public ScopeTable visit(CallProcOP v) {
+    visitNodeList(v.getParams());
+
     return null;
   }
 
   @Override public ScopeTable visit(IdNodeExpr v) {
+    visitNode(v.getId());
+
     return null;
   }
 
   @Override public ScopeTable visit(ReturnOP v) {
+    visitNodeList(v.getExprList());
+
     return null;
   }
 
   @Override public ScopeTable visit(AssignOP v) {
+
+    visitNodeList(v.getIdNodeList());
+
+    visitNodeList(v.getExprList());
+
     return null;
   }
 
   @Override public ScopeTable visit(WriteOP v) {
+    visitNodeList(v.getExprList());
+
     return null;
   }
 
   @Override public ScopeTable visit(ReadOP v) {
+    visitNodeList(v.getExprList());
+
     return null;
   }
 
   @Override public ScopeTable visit(WhileOP v) {
-    return null;
+    v.getCondition().accept(this);
+
+    ScopeTable scopeTable = new ScopeTable(stack.getFirst());
+    v.setScopeTable(scopeTable);
+    nodeTable(scopeTable, v.getBody());
+
+    return scopeTable;
   }
 
   @Override public ScopeTable visit(IfOP v) {
-    return null;
+    v.getCondition().accept(this);
+
+    ScopeTable scopeTable = new ScopeTable(stack.getFirst());
+    v.setScopeTable(scopeTable);
+    nodeTable(scopeTable, v.getBody());
+
+    // ELIF and ELSE do NOT have to have access to the IF table
+    visitNodeList(v.getElifOPList());
+    visitNode(v.getElse());
+
+    return scopeTable;
   }
 
   @Override public ScopeTable visit(ElifOP v) {
-    return null;
+    v.getCondition().accept(this);
+
+    ScopeTable scopeTable = new ScopeTable(stack.getFirst());
+    v.setScopeTable(scopeTable);
+    nodeTable(scopeTable, v.getBody());
+
+    return scopeTable;
+  }
+
+  @Override public ScopeTable visit(ElseOP v) {
+    ScopeTable scopeTable = new ScopeTable(stack.getFirst());
+    v.setScopeTable(scopeTable);
+    nodeTable(scopeTable, v.getBody());
+
+    return scopeTable;
   }
 
   private Type constTypeToType(Const constType) {
@@ -316,4 +348,31 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
       case TRUE, FALSE -> Type.BOOLEAN;
     };
   }
+
+  private <T extends Node> void nodeTable(ScopeTable scopeTable, T node) {
+    stack.push(scopeTable);
+    visitNode(node);
+    stack.pop();
+  }
+
+  private <T extends Node> void nodeTableList(ScopeTable scopeTable, List<T> nodeList) {
+    stack.push(scopeTable);
+    visitNodeList(nodeList);
+    stack.pop();
+  }
+
+  private <T extends Node> void visitNode(T node) {
+    if (node != null) {
+      node.accept(this);
+    }
+  }
+
+  private <T extends Node> void visitNodeList(List<T> nodeList) {
+    if (!Utility.isListEmpty(nodeList)) {
+      for (Node node : nodeList) {
+        node.accept(this);
+      }
+    }
+  }
+
 }

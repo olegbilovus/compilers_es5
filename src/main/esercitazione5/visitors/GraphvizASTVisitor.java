@@ -38,6 +38,7 @@ import main.esercitazione5.ast.nodes.expr.UminusOP;
 import main.esercitazione5.ast.nodes.stat.AssignOP;
 import main.esercitazione5.ast.nodes.stat.CallProcOP;
 import main.esercitazione5.ast.nodes.stat.ElifOP;
+import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
@@ -353,12 +354,8 @@ public class GraphvizASTVisitor extends Visitor<String> {
     genNode(toReturn, v.getBody());
     genList(toReturn, v.getElifOPList(), ElifOP.class);
 
-    if (v.getElseBody() != null) {
-      int originalParent = parentNodeNum;
-      toReturn.append(node("Else")).append(edge());
-      parentNodeNum = nodeNum;
-      genNode(toReturn, v.getElseBody());
-      parentNodeNum = originalParent;
+    if (v.getElse() != null) {
+      genNode(toReturn, v.getElse());
     }
 
     return toReturn.toString();
@@ -370,6 +367,16 @@ public class GraphvizASTVisitor extends Visitor<String> {
     parentNodeNum = nodeNum;
 
     genNode(toReturn, v.getCondition());
+    genNode(toReturn, v.getBody());
+
+    return toReturn.toString();
+  }
+
+  @Override public String visit(ElseOP v) {
+    StringBuilder toReturn = new StringBuilder();
+    toReturn.append(node(ElseOP.class)).append(edge());
+    parentNodeNum = nodeNum;
+
     genNode(toReturn, v.getBody());
 
     return toReturn.toString();

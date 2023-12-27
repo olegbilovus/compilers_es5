@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="LexerTester_Math" type="Application" factoryName="Application">
+  <configuration default="false" name="LexerTester_math" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="main.esercitazione5.LexerTester" />
     <module name="bilovus_es5" />
     <option name="PROGRAM_PARAMETERS" value="$ProjectFileDir$ math.txt" />

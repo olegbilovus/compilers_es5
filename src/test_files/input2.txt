@@ -4,9 +4,9 @@ c, b: boolean;\
 
 
 proc main(v: string, n: integer):
-  var b: real; s: string;\
+  var b: real; s, i : string;\
   s ^= "hello" + "world";
-  res ^= f(4+5, a>=b);
+  b, s ^= f(4+5, a>=b);
   p(@b, s);
 
   --> "Input is " $(i+1) "\nThanks";
@@ -14,6 +14,7 @@ proc main(v: string, n: integer):
   <-- "Enter input:" + "\n" $(i) "Done";
 
   while true do
+    var aaa: real;\
     b ^= a + 4;
   endwhile;
 endproc
@@ -27,13 +28,16 @@ proc p(out a: integer, b: boolean):
     c ^= a > 5;
   elseif !r then
     a ^= 7 * -4;
+    var s: real;\
   else
-    a ^= 5;
+    var a: boolean;\
+    a ^= true;
   endif;
 
   while a <= 10 do
     r ^= a * a;
     a ^= a + 1;
+    var v: integer;\
     v ^= 4 + a;
     while true do
       b ^= 4;

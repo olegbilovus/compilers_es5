@@ -1,8 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="ParserTester_Math" type="Application" factoryName="Application">
-    <option name="ALTERNATIVE_JRE_PATH" value="17" />
-    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
-    <option name="MAIN_CLASS_NAME" value="main.esercitazione5.ParserTester" />
+  <configuration default="false" name="ScopingTester_math" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="main.esercitazione5.ScopingTester" />
     <module name="bilovus_es5" />
     <option name="PROGRAM_PARAMETERS" value="$ProjectFileDir$ math.txt" />
     <extension name="coverage">

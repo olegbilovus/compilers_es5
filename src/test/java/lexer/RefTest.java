@@ -1,7 +1,6 @@
 package test.java.lexer;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java_cup.runtime.Symbol;
 import main.esercitazione5.Yylex;
 import main.esercitazione5.sym;
@@ -13,8 +12,7 @@ public class RefTest {
 
   @Test
   public void valid() throws IOException {
-    StringReader source = new StringReader("p(@a);");
-    Yylex lexer = new Yylex(source);
+    Yylex lexer = LexerUtility.lexer("p(@a);");
     lexer.next_token();
     lexer.next_token();
     Symbol token = lexer.next_token();
