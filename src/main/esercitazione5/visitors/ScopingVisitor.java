@@ -167,8 +167,8 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
   }
 
   private ScopeTable binaryOP(Expr v) {
-    visitNode(v.getExprRight());
     visitNode(v.getExprLeft());
+    visitNode(v.getExprRight());
 
     return null;
   }

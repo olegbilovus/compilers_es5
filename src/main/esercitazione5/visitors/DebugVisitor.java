@@ -1,5 +1,6 @@
 package main.esercitazione5.visitors;
 
+import java.util.List;
 import main.esercitazione5.StringTable;
 import main.esercitazione5.Utility;
 import main.esercitazione5.ast.ConstValue;
@@ -8,6 +9,7 @@ import main.esercitazione5.ast.Type;
 import main.esercitazione5.ast.nodes.BodyOP;
 import main.esercitazione5.ast.nodes.FunOP;
 import main.esercitazione5.ast.nodes.IdNode;
+import main.esercitazione5.ast.nodes.Node;
 import main.esercitazione5.ast.nodes.ProcFunParamOP;
 import main.esercitazione5.ast.nodes.ProcOP;
 import main.esercitazione5.ast.nodes.ProgramOP;
@@ -41,12 +43,12 @@ import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
-import main.esercitazione5.ast.nodes.stat.Stat;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
 
 public class DebugVisitor extends Visitor<String> {
 
+  private static final String COMMA_SEP = ", ";
 
   public DebugVisitor(StringTable stringTable) {
     super(stringTable);
@@ -59,18 +61,12 @@ public class DebugVisitor extends Visitor<String> {
   @Override public String visit(ProgramOP v) {
     StringBuilder toReturn = new StringBuilder();
 
-    for (VarDeclOP vd : v.getVarDeclOPList()) {
-      toReturn.append(vd.accept(this)).append('\n');
-    }
+    genList(toReturn, v.getVarDeclOPList(), "\n");
     toReturn.append('\n');
 
-    for (ProcOP p : v.getProcOPList()) {
-      toReturn.append(p.accept(this)).append("\n\n");
-    }
+    genList(toReturn, v.getFunOPList(), "\n\n");
 
-    for (FunOP f : v.getFunOPList()) {
-      toReturn.append(f.accept(this)).append("\n\n");
-    }
+    genList(toReturn, v.getProcOPList(), "\n\n");
     toReturn.append('\n');
 
     return toReturn.toString();
@@ -109,12 +105,7 @@ public class DebugVisitor extends Visitor<String> {
     StringBuilder toReturn = new StringBuilder("func ");
     toReturn.append(st(v.getId())).append("(");
 
-    if (!Utility.isListEmpty(v.getProcFunParamOPList())) {
-      for (ProcFunParamOP p : v.getProcFunParamOPList()) {
-        toReturn.append(p.accept(this)).append(", ");
-      }
-      Utility.deleteLastCommaSpace(toReturn);
-    }
+    genList(toReturn, v.getProcFunParamOPList(), COMMA_SEP);
     toReturn.append(") -> ");
 
     for (Type t : v.getReturnTypes()) {
@@ -123,9 +114,7 @@ public class DebugVisitor extends Visitor<String> {
     Utility.deleteLastCommaSpace(toReturn);
     toReturn.append(":\n");
 
-    if (v.getBodyOP() != null) {
-      toReturn.append(v.getBodyOP().accept(this));
-    }
+    genNode(toReturn, v.getBodyOP());
 
     toReturn.append("endfunc");
 
@@ -136,17 +125,10 @@ public class DebugVisitor extends Visitor<String> {
     StringBuilder toReturn = new StringBuilder("proc ");
     toReturn.append(st(v.getId())).append("(");
 
-    if (!Utility.isListEmpty(v.getProcFunParamOPList())) {
-      for (ProcFunParamOP p : v.getProcFunParamOPList()) {
-        toReturn.append(p.accept(this)).append(", ");
-      }
-      Utility.deleteLastCommaSpace(toReturn);
-    }
+    genList(toReturn, v.getProcFunParamOPList(), COMMA_SEP);
     toReturn.append("):\n");
 
-    if (v.getBodyOP() != null) {
-      toReturn.append(v.getBodyOP().accept(this));
-    }
+    genNode(toReturn, v.getBodyOP());
 
     toReturn.append("endproc");
 
@@ -167,17 +149,8 @@ public class DebugVisitor extends Visitor<String> {
   @Override public String visit(BodyOP v) {
     StringBuilder toReturn = new StringBuilder();
 
-    if (!Utility.isListEmpty(v.getVarDeclOPList())) {
-      for (VarDeclOP vd : v.getVarDeclOPList()) {
-        toReturn.append(vd.accept(this)).append('\n');
-      }
-    }
-
-    if (!Utility.isListEmpty(v.getStatList())) {
-      for (Stat s : v.getStatList()) {
-        toReturn.append(s.accept(this)).append('\n');
-      }
-    }
+    genList(toReturn, v.getVarDeclOPList(), "\n");
+    genList(toReturn, v.getStatList(), "\n");
 
     return toReturn.toString();
   }
@@ -189,8 +162,9 @@ public class DebugVisitor extends Visitor<String> {
       toReturn.append("(");
     }
 
-    toReturn.append(v.getExprLeft().accept(this)).append(" ").append(sym).append(" ");
-    toReturn.append(v.getExprRight().accept(this));
+    genNode(toReturn, v.getExprLeft());
+    toReturn.append(" ").append(sym).append(" ");
+    genNode(toReturn, v.getExprRight());
 
     if (Boolean.TRUE.equals(v.isInPar())) {
       toReturn.append(")");
@@ -279,13 +253,7 @@ public class DebugVisitor extends Visitor<String> {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(st(v.getId())).append("(");
 
-    if (!Utility.isListEmpty(v.getExprList())) {
-      for (Expr e : v.getExprList()) {
-        toReturn.append(e.accept(this)).append(", ");
-      }
-      Utility.deleteLastCommaSpace(toReturn);
-    }
-
+    genList(toReturn, v.getExprList(), COMMA_SEP);
     toReturn.append(")");
 
     return toReturn.toString();
@@ -295,13 +263,7 @@ public class DebugVisitor extends Visitor<String> {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(st(v.getId())).append("(");
 
-    if (!Utility.isListEmpty(v.getParams())) {
-      for (Expr e : v.getParams()) {
-        toReturn.append(e.accept(this)).append(", ");
-      }
-      Utility.deleteLastCommaSpace(toReturn);
-    }
-
+    genList(toReturn, v.getParams(), COMMA_SEP);
     toReturn.append(");");
 
     return toReturn.toString();
@@ -314,10 +276,7 @@ public class DebugVisitor extends Visitor<String> {
   @Override public String visit(ReturnOP v) {
     StringBuilder toReturn = new StringBuilder("return ");
 
-    for (Expr e : v.getExprList()) {
-      toReturn.append(e.accept(this)).append(", ");
-    }
-    Utility.deleteLastCommaSpace(toReturn);
+    genList(toReturn, v.getExprList(), COMMA_SEP);
     toReturn.append(";");
 
     return toReturn.toString();
@@ -326,17 +285,10 @@ public class DebugVisitor extends Visitor<String> {
   @Override public String visit(AssignOP v) {
     StringBuilder toReturn = new StringBuilder();
 
-    for (IdNode id : v.getIdNodeList()) {
-      toReturn.append(st(id)).append(", ");
-    }
-    Utility.deleteLastCommaSpace(toReturn);
+    genList(toReturn, v.getIdNodeList(), COMMA_SEP);
     toReturn.append(" ^= ");
 
-    for (Expr e : v.getExprList()) {
-      toReturn.append(e.accept(this)).append(", ");
-    }
-    Utility.deleteLastCommaSpace(toReturn);
-
+    genList(toReturn, v.getExprList(), COMMA_SEP);
     toReturn.append(";");
 
     return toReturn.toString();
@@ -389,10 +341,7 @@ public class DebugVisitor extends Visitor<String> {
     StringBuilder toReturn = new StringBuilder("while ");
     toReturn.append(v.getCondition().accept(this)).append(" do\n");
 
-    if (v.getBody() != null) {
-      toReturn.append(v.getBody().accept(this));
-    }
-
+    genNode(toReturn, v.getBody());
     toReturn.append("endwhile;");
 
     return toReturn.toString();
@@ -402,20 +351,9 @@ public class DebugVisitor extends Visitor<String> {
     StringBuilder toReturn = new StringBuilder("if ");
     toReturn.append(v.getCondition().accept(this)).append(" then\n");
 
-    if (v.getBody() != null) {
-      toReturn.append(v.getBody().accept(this));
-    }
-
-    if (v.getElifOPList() != null) {
-      for (ElifOP elf : v.getElifOPList()) {
-        toReturn.append(elf.accept(this));
-      }
-    }
-
-    if (v.getElse() != null) {
-      toReturn.append(v.getElse().accept(this));
-    }
-
+    genNode(toReturn, v.getBody());
+    genList(toReturn, v.getElifOPList(), "");
+    genNode(toReturn, v.getElse());
     toReturn.append("endif;");
 
     return toReturn.toString();
@@ -425,9 +363,7 @@ public class DebugVisitor extends Visitor<String> {
     StringBuilder toReturn = new StringBuilder("elseif ");
     toReturn.append(v.getCondition().accept(this)).append(" then\n");
 
-    if (v.getBody() != null) {
-      toReturn.append(v.getBody().accept(this));
-    }
+    genNode(toReturn, v.getBody());
 
     return toReturn.toString();
   }
@@ -435,10 +371,26 @@ public class DebugVisitor extends Visitor<String> {
   @Override public String visit(ElseOP v) {
     StringBuilder toReturn = new StringBuilder("else\n ");
 
-    if (v.getBody() != null) {
-      toReturn.append(v.getBody().accept(this));
-    }
+    genNode(toReturn, v.getBody());
 
     return toReturn.toString();
+  }
+
+  private <T extends Node> void genNode(StringBuilder toReturn, T node) {
+    if (node != null) {
+      toReturn.append(node.accept(this));
+    }
+  }
+
+  private <T extends Node> void genList(StringBuilder toReturn, List<T> nodeList,
+      String appendEnd) {
+    if (!Utility.isListEmpty(nodeList)) {
+      for (T node : nodeList) {
+        toReturn.append(node.accept(this)).append(appendEnd);
+      }
+      if (appendEnd.equals(COMMA_SEP)) {
+        Utility.deleteLastCommaSpace(toReturn);
+      }
+    }
   }
 }

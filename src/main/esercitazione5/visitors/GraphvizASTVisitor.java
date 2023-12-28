@@ -1,5 +1,7 @@
 package main.esercitazione5.visitors;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import main.esercitazione5.StringTable;
 import main.esercitazione5.Utility;
@@ -48,11 +50,12 @@ import main.esercitazione5.ast.nodes.stat.WriteOP;
 
 public class GraphvizASTVisitor extends Visitor<String> {
 
-  private int nodeNum = 0;
-  private int parentNodeNum = 0;
+  private int nodeCount = 0;
+  private final Deque<Integer> stackParent;
 
   public GraphvizASTVisitor(StringTable stringTable) {
     super(stringTable);
+    stackParent = new ArrayDeque<>();
   }
 
   @Override public String visit(IdNode v) {
@@ -62,12 +65,14 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(ProgramOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append("digraph {\n").append(node(ProgramOP.class));
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
 
     genList(toReturn, v.getVarDeclOPList(), VarDeclOP.class);
     genList(toReturn, v.getProcOPList(), ProcOP.class);
     genList(toReturn, v.getFunOPList(), FunOP.class);
     toReturn.append("}\n");
+
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -75,18 +80,20 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(VarDeclOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(VarDeclOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
 
     toReturn.append(node("ID", true)).append(edge());
+    stackParent.push(nodeCount);
     for (IdNode id : v.getIdList()) {
-      toReturn.append(node(st(id))).append(edge(parentNodeNum + 1));
+      toReturn.append(node(st(id))).append(edge(stackParent.getFirst()));
     }
+    stackParent.pop();
 
     if (v.getType() != null) {
       toReturn.append(node(v.getType().name().toLowerCase())).append(edge());
     } else {
       toReturn.append(node(ConstValue.class, true)).append(edge());
-      parentNodeNum = nodeNum;
+      stackParent.push(nodeCount);
 
       for (ConstValue cv : v.getConstValueList()) {
         switch (cv.constType()) {
@@ -98,7 +105,10 @@ public class GraphvizASTVisitor extends Visitor<String> {
           default -> toReturn.append(node(cv.value())).append(edge());
         }
       }
+      stackParent.pop();
     }
+
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -106,18 +116,20 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(FunOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(FunOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
     toReturn.append(node(st(v.getId()))).append(edge());
 
     genList(toReturn, v.getProcFunParamOPList(), ProcFunParamOP.class);
 
     toReturn.append(node("ReturnTypes", true)).append(edge());
-    int outerParent = nodeNum;
+    stackParent.push(nodeCount);
     for (Type t : v.getReturnTypes()) {
-      toReturn.append(node(t.name().toLowerCase())).append(edge(outerParent));
+      toReturn.append(node(t.name().toLowerCase())).append(edge(stackParent.getFirst()));
     }
+    stackParent.pop();
 
     genNode(toReturn, v.getBodyOP());
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -125,11 +137,12 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(ProcOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(ProcOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
     toReturn.append(node(st(v.getId()))).append(edge());
 
     genList(toReturn, v.getProcFunParamOPList(), ProcFunParamOP.class);
     genNode(toReturn, v.getBodyOP());
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -137,10 +150,11 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(ProcFunParamOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(ProcFunParamOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
     toReturn.append(node(v.getParamAccess().name().toLowerCase())).append(edge());
     toReturn.append(node(st(v.getId()))).append(edge());
     toReturn.append(node(v.getType().name().toLowerCase())).append(edge());
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -148,10 +162,12 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(BodyOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(BodyOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
 
     genList(toReturn, v.getVarDeclOPList(), VarDeclOP.class);
     genList(toReturn, v.getStatList(), Stat.class);
+
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -159,10 +175,13 @@ public class GraphvizASTVisitor extends Visitor<String> {
   private String binaryOP(Expr v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(v.getClass())).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
 
     genNode(toReturn, v.getExprLeft());
     genNode(toReturn, v.getExprRight());
+
+    stackParent.pop();
+
 
     return toReturn.toString();
   }
@@ -218,9 +237,11 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(UminusOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(UminusOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
 
     genNode(toReturn, v.getExprLeft());
+
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -228,9 +249,11 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(NotOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(NotOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
 
     genNode(toReturn, v.getExprLeft());
+
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -258,10 +281,12 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(CallFunOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(CallFunOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
     toReturn.append(node(st(v.getId()))).append(edge());
 
     genList(toReturn, v.getExprList(), Expr.class);
+
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -269,10 +294,12 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(CallProcOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(CallProcOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
     toReturn.append(node(st(v.getId()))).append(edge());
 
     genList(toReturn, v.getParams(), Expr.class);
+
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -280,9 +307,11 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(IdNodeExpr v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(IdNodeExpr.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
     toReturn.append(node(Boolean.TRUE.equals(v.isRef()) ? "REF" : "NOREF")).append(edge());
     toReturn.append(node(st(v.getId()))).append(edge());
+
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -296,14 +325,16 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(AssignOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(AssignOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
 
     toReturn.append(node("ID", true)).append(edge());
     for (IdNode id : v.getIdNodeList()) {
-      toReturn.append(node(st(id))).append(edge(parentNodeNum + 1));
+      toReturn.append(node(st(id))).append(edge(stackParent.getFirst() + 1));
     }
 
     genList(toReturn, v.getExprList(), Expr.class);
+
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -311,7 +342,7 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(WriteOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(WriteOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
 
     if (Boolean.TRUE.equals(v.hasNewline())) {
       toReturn.append(node("TRUE")).append(edge());
@@ -321,15 +352,19 @@ public class GraphvizASTVisitor extends Visitor<String> {
 
     genList(toReturn, v.getExprList(), Expr.class);
 
+    stackParent.pop();
+
     return toReturn.toString();
   }
 
   @Override public String visit(ReadOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(ReadOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
 
     genList(toReturn, v.getExprList(), Expr.class);
+
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -337,10 +372,12 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(WhileOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(WhileOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
 
     genNode(toReturn, v.getCondition());
     genNode(toReturn, v.getBody());
+
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -348,15 +385,14 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(IfOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(IfOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
 
     genNode(toReturn, v.getCondition());
     genNode(toReturn, v.getBody());
     genList(toReturn, v.getElifOPList(), ElifOP.class);
+    genNode(toReturn, v.getElse());
 
-    if (v.getElse() != null) {
-      genNode(toReturn, v.getElse());
-    }
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -364,10 +400,12 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(ElifOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(ElifOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
 
     genNode(toReturn, v.getCondition());
     genNode(toReturn, v.getBody());
+
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -375,9 +413,11 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(ElseOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(ElseOP.class)).append(edge());
-    parentNodeNum = nodeNum;
+    stackParent.push(nodeCount);
 
     genNode(toReturn, v.getBody());
+
+    stackParent.pop();
 
     return toReturn.toString();
   }
@@ -392,7 +432,7 @@ public class GraphvizASTVisitor extends Visitor<String> {
   }
 
   private String node(String label, boolean box) {
-    return "node" + ++nodeNum + label(label, box);
+    return "node" + ++nodeCount + label(label, box);
   }
 
   private String node(String label) {
@@ -412,32 +452,28 @@ public class GraphvizASTVisitor extends Visitor<String> {
   }
 
   private String edge(int n1) {
-    return edge(n1, nodeNum);
+    return edge(n1, nodeCount);
   }
 
   private String edge() {
-    return edge(parentNodeNum, nodeNum);
+    return edge(stackParent.getFirst(), nodeCount);
   }
 
 
   private <T extends Node> void genList(StringBuilder toReturn, List<T> list, Class claz) {
     if (!Utility.isListEmpty(list)) {
       toReturn.append(node(claz, true)).append(edge());
-      int originalParent = parentNodeNum;
-      int outerParent = nodeNum;
+      stackParent.push(nodeCount);
       for (Node n : list) {
-        parentNodeNum = outerParent;
         toReturn.append(n.accept(this)).append("\n");
       }
-      parentNodeNum = originalParent;
+      stackParent.pop();
     }
   }
 
   private <T extends Node> void genNode(StringBuilder toReturn, T node) {
     if (node != null) {
-      int originalParent = parentNodeNum;
       toReturn.append(node.accept(this));
-      parentNodeNum = originalParent;
     }
   }
 }
