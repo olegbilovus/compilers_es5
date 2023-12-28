@@ -49,6 +49,9 @@ public class VarDeclOPTest {
     Assertions.assertEquals(Type.STRING, scopeType.type());
     Assertions.assertEquals(ParamAccess.IN, scopeType.paramAccess());
     Assertions.assertTrue(Utility.isListEmpty(entry.getListType2()));
+
+    // first use and later init same scope
+    Assertions.assertDoesNotThrow(() -> init("proc main(): a ^= 4; var a: integer;\\ endproc"));
   }
 
   @Test

@@ -42,4 +42,12 @@ public class ScopeEntry {
   public ScopeType getType() {
     return listType1 != null ? listType1.get(0) : null;
   }
+
+  @Override public String toString() {
+    return "ScopeEntry{" +
+        "kind=" + kind +
+        ", listType1=" + listType1 +
+        ", listType2=" + listType2 +
+        '}';
+  }
 }

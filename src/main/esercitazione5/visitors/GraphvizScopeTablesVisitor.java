@@ -364,7 +364,7 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
 
       ScopeEntry scopeEntry = entry.getValue();
       switch (scopeEntry.getKind()) {
-        case FUN, PROC, IF, WHILE -> {
+        case FUN, PROC -> {
           arrowsToReturn.append(genArrow(parentTableCount, entryCounter, ++tableCount));
           arrows.getFirst().put(entry.getKey(), tableCount);
         }

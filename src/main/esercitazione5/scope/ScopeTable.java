@@ -1,6 +1,7 @@
 package main.esercitazione5.scope;
 
 import java.util.HashMap;
+import java.util.Map;
 import main.esercitazione5.StringTable;
 import main.esercitazione5.ast.nodes.Node;
 import main.esercitazione5.scope.exceptions.AlreadyDeclaredScopeException;
@@ -18,7 +19,7 @@ public class ScopeTable {
     this.prev = prev;
   }
 
-  public HashMap<Integer, ScopeEntry> getTable() {
+  public Map<Integer, ScopeEntry> getTable() {
     return table;
   }
 
@@ -52,5 +53,12 @@ public class ScopeTable {
           v.accept(new DebugVisitor(st)));
     }
     table.put(id, entry);
+  }
+
+  @Override public String toString() {
+    return "ScopeTable{" +
+        "table=" + table +
+        ", prev=" + prev +
+        '}';
   }
 }

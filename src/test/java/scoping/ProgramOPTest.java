@@ -16,21 +16,27 @@ public class ProgramOPTest {
   public void varDeclOPListValid() throws Exception {
     ScopeTable scopeTable = init("proc main(): endproc");
     Assertions.assertEquals(1, scopeTable.getTable().size());
+    Assertions.assertEquals(0, ScopingUtility.numPrevTables(scopeTable));
 
     scopeTable = init("var a: integer;\\ proc main(): endproc");
     Assertions.assertEquals(2, scopeTable.getTable().size());
+    Assertions.assertEquals(0, ScopingUtility.numPrevTables(scopeTable));
 
     scopeTable = init("var a: integer; b: boolean;\\ proc main(): endproc");
     Assertions.assertEquals(3, scopeTable.getTable().size());
+    Assertions.assertEquals(0, ScopingUtility.numPrevTables(scopeTable));
 
     scopeTable = init("var a, b: integer;\\ proc main(): endproc");
     Assertions.assertEquals(3, scopeTable.getTable().size());
+    Assertions.assertEquals(0, ScopingUtility.numPrevTables(scopeTable));
 
     scopeTable = init("var a, b: integer;\\ proc main(): endproc var c ^= 2;\\");
     Assertions.assertEquals(4, scopeTable.getTable().size());
+    Assertions.assertEquals(0, ScopingUtility.numPrevTables(scopeTable));
 
     scopeTable = init("var a, b: integer;\\ proc main(): var c: boolean;\\ endproc var c ^= 2;\\");
     Assertions.assertEquals(4, scopeTable.getTable().size());
+    Assertions.assertEquals(0, ScopingUtility.numPrevTables(scopeTable));
   }
 
   @Test

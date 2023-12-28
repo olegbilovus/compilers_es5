@@ -12,37 +12,36 @@ import main.esercitazione5.scope.exceptions.UndeclaredScopeException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class FunOPTest {
+public class ProcOPTest {
 
   private ScopeTable init(ProgramOP programOP) {
-    return programOP.getFunOPList().get(0).getScopeTable();
+    return programOP.getProcOPList().get(0).getScopeTable();
   }
 
   @Test
   public void valid() throws Exception {
     ProgramOP programOP =
-        ScopingUtility.astScoped("func f() -> real: return 1.2; endfunc proc main(): endproc");
+        ScopingUtility.astScoped("proc p(): endproc proc main(): endproc");
     ScopeTable global = programOP.getScopeTable();
     ScopeEntry entry = global.lookup(1, null);
-    Assertions.assertEquals(ScopeKind.FUN, entry.getKind());
+    Assertions.assertEquals(ScopeKind.PROC, entry.getKind());
     Assertions.assertTrue(Utility.isListEmpty(entry.getListType1()));
-    Assertions.assertEquals(1, entry.getListType2().size());
-    Assertions.assertEquals(Type.REAL, entry.getListType2().get(0));
+    Assertions.assertTrue(Utility.isListEmpty(entry.getListType2()));
     ScopeTable scopeTable = init(programOP);
     Assertions.assertTrue(scopeTable.getTable().isEmpty());
     Assertions.assertEquals(1, ScopingUtility.numPrevTables(scopeTable));
 
     programOP = ScopingUtility.astScoped(
-        "func f(a: integer, b: real) -> real, boolean: var x ^= 45;\\ endfunc proc main(): endproc");
+        "proc p(a: integer, out b: real): var x ^= 45;\\ endproc proc main(): endproc");
     global = programOP.getScopeTable();
     entry = global.lookup(1, null);
-    Assertions.assertEquals(ScopeKind.FUN, entry.getKind());
+    Assertions.assertEquals(ScopeKind.PROC, entry.getKind());
+    Assertions.assertTrue(Utility.isListEmpty(entry.getListType2()));
     Assertions.assertEquals(2, entry.getListType1().size());
-    Assertions.assertEquals(2, entry.getListType2().size());
     Assertions.assertEquals(Type.INTEGER, entry.getListType1().get(0).type());
-    Assertions.assertEquals(ParamAccess.IN, entry.getListType1().get(0).paramAccess());
+    Assertions.assertEquals(ParamAccess.INOUT, entry.getListType1().get(0).paramAccess());
     Assertions.assertEquals(Type.REAL, entry.getListType1().get(1).type());
-    Assertions.assertEquals(ParamAccess.IN, entry.getListType1().get(1).paramAccess());
+    Assertions.assertEquals(ParamAccess.OUT, entry.getListType1().get(1).paramAccess());
     scopeTable = init(programOP);
     Assertions.assertEquals(3, scopeTable.getTable().size());
     Assertions.assertEquals(1, ScopingUtility.numPrevTables(scopeTable));
@@ -54,16 +53,16 @@ public class FunOPTest {
     // redefine a parameter in the signature
     Assertions.assertThrows(AlreadyDeclaredScopeException.class,
         () -> ScopingUtility.astScoped(
-            "func f(a: real, a: boolean) -> real: return 1.2; endfunc proc main(): endproc"));
+            "proc p(a: real, out a: boolean): endproc proc main(): endproc"));
 
     // redefine a parameter inside the body
     Assertions.assertThrows(AlreadyDeclaredScopeException.class,
         () -> ScopingUtility.astScoped(
-            "func f(a: real) -> real: var a: string;\\ endfunc proc main(): endproc"));
+            "proc p(a: real): var a: string;\\ endproc proc main(): endproc"));
 
-    // return not existing variable
+    // use not existing variable
     Assertions.assertThrows(UndeclaredScopeException.class,
         () -> ScopingUtility.astScoped(
-            "func f(a: real) -> real: return c; endfunc proc main(): endproc"));
+            "proc p(a: real): c ^= 4; endproc proc main(): endproc"));
   }
 }

@@ -4,6 +4,7 @@ import java.io.StringReader;
 import main.esercitazione5.Yylex;
 import main.esercitazione5.ast.nodes.ProgramOP;
 import main.esercitazione5.parser;
+import main.esercitazione5.scope.ScopeTable;
 import main.esercitazione5.visitors.ScopingVisitor;
 
 public class ScopingUtility {
@@ -20,6 +21,16 @@ public class ScopingUtility {
     programOP.accept(scopingVisitor);
 
     return programOP;
+  }
+
+  public static int numPrevTables(ScopeTable scopeTable) {
+    int count = 0;
+    for (ScopeTable currTable = scopeTable; currTable.getPrev() != null;
+        currTable = currTable.getPrev()) {
+      count++;
+    }
+
+    return count;
   }
 
 }
