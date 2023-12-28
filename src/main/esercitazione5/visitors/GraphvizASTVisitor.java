@@ -50,8 +50,8 @@ import main.esercitazione5.ast.nodes.stat.WriteOP;
 
 public class GraphvizASTVisitor extends Visitor<String> {
 
-  private int nodeCount = 0;
   private final Deque<Integer> stackParent;
+  private int nodeCount = 0;
 
   public GraphvizASTVisitor(StringTable stringTable) {
     super(stringTable);
@@ -181,7 +181,6 @@ public class GraphvizASTVisitor extends Visitor<String> {
     genNode(toReturn, v.getExprRight());
 
     stackParent.pop();
-
 
     return toReturn.toString();
   }
