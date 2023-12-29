@@ -42,6 +42,7 @@ proc p(out a: integer, b: boolean):
     v ^= 4 + a;
     while true do
       b ^= 4;
+      var a: real;\
     endwhile;
   endwhile;
 endproc

@@ -10,6 +10,8 @@ import java.nio.file.Files;
 import main.esercitazione5.ast.nodes.ProgramOP;
 import main.esercitazione5.visitors.DebugVisitor;
 import main.esercitazione5.visitors.GraphvizASTVisitor;
+import main.esercitazione5.visitors.GraphvizScopeTablesVisitor;
+import main.esercitazione5.visitors.ScopingVisitor;
 import main.esercitazione5.visitors.Visitor;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
@@ -27,12 +29,19 @@ public class Main {
     parser.addArgument("-o").type(Arguments.fileType().verifyCanCreate())
         .help("Output to a file.");
 
+    final String[] availableVisitors = {"graphviz_scope", "scope_check", "graphviz_ast", "debug"};
+
     MutuallyExclusiveGroup visitorGroup =
         parser.addMutuallyExclusiveGroup("Visitor type");
-    visitorGroup.addArgument("--graphviz").action(Arguments.storeTrue())
-        .help("Create a Graphviz AST diagram in dot language. (Default)");
-    visitorGroup.addArgument("--debug").action(Arguments.storeTrue())
-        .help("Debug the Lexer and Parser. The input will run on both "
+    visitorGroup.addArgument("--" + availableVisitors[0]).action(Arguments.storeTrue())
+        .help(
+            "Create a Graphviz Tables diagram in dot language which shows all the scoping tables.");
+    visitorGroup.addArgument("--" + availableVisitors[1]).action(Arguments.storeTrue())
+        .help("Check that there is no scoping errors.");
+    visitorGroup.addArgument("--" + availableVisitors[2]).action(Arguments.storeTrue())
+        .help("Create a Graphviz AST diagram in dot language.");
+    visitorGroup.addArgument("--" + availableVisitors[3]).action(Arguments.storeTrue())
+        .help("(default) Debug the Lexer and Parser. The input will run on both "
             + "and produce the equivalent of source in Toy2.");
 
     Namespace ns = parser.parseArgsOrFail(args);
@@ -54,15 +63,27 @@ public class Main {
     ProgramOP ast = (ProgramOP) p.parse().value;
     StringTable st = lexer.getStringTable();
 
-    Visitor<String> visitor;
-
-    if (Boolean.TRUE.equals(ns.getBoolean("debug"))) {
-      visitor = new DebugVisitor(st);
-    } else {
-      visitor = new GraphvizASTVisitor(st);
+    final boolean[] chosenVisitor = new boolean[availableVisitors.length];
+    for (int i = 0; i < availableVisitors.length; i++) {
+      Boolean val = ns.getBoolean(availableVisitors[i]);
+      chosenVisitor[i] = val != null && val;
     }
 
-    String visitorRes = visitor.visit(ast);
+    Visitor visitor;
+
+    if (chosenVisitor[0]) {
+      ast.accept(new ScopingVisitor(st));
+      visitor = new GraphvizScopeTablesVisitor(st);
+    } else if (chosenVisitor[1]) {
+      visitor = new ScopingVisitor(st);
+
+    } else if (chosenVisitor[2]) {
+      visitor = new GraphvizASTVisitor(st);
+    } else {
+      visitor = new DebugVisitor(st);
+    }
+
+    String visitorRes = visitor.visit(ast).toString();
     File fileOutput = ns.get("o");
 
     if (fileOutput == null) {
@@ -70,9 +91,11 @@ public class Main {
     } else {
       try (FileWriter fileWriter = new FileWriter(fileOutput)) {
         fileWriter.write(visitorRes);
-        System.out.println(
-            "dot -Tsvg \"" + fileOutput.getAbsolutePath() + "\" -o " + fileOutput.getName()
-                .split("\\.")[0] + ".svg");
+        if (chosenVisitor[0] || chosenVisitor[2]) {
+          System.out.println(
+              "dot -Tsvg \"" + fileOutput.getAbsolutePath() + "\" -o " + fileOutput.getName()
+                  .split("\\.")[0] + ".svg");
+        }
       }
     }
 

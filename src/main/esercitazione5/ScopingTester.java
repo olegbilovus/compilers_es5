@@ -28,9 +28,10 @@ public class ScopingTester {
         """);
     int c = s.nextInt();
 
-    ast.accept(new ScopingVisitor(lexer.getStringTable()));
+    ScopingVisitor scopingVisitor = new ScopingVisitor(lexer.getStringTable());
+    ast.accept(scopingVisitor);
 
-    System.out.println("Scoping succeeded\n");
+    System.out.println(scopingVisitor + "\n");
 
     if (c == 2) {
       System.out.println(ast.accept(new GraphvizScopeTablesVisitor(lexer.getStringTable())));

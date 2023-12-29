@@ -1,6 +1,6 @@
 ## Modifiche alla grammatica
 
-[Immagine diagramma di stati LALR della grammatica](src/main/esercitazione5/images/LALR_states.svg)
+[Immagine diagramma di stati LALR della grammatica](src/main/esercitazione5/images/LALR.svg)
 
 Dopo le seguenti modifiche, la grammatica non presenta più alcun conflitto.
 
@@ -34,7 +34,7 @@ Dopo le seguenti modifiche, la grammatica non presenta più alcun conflitto.
 
 - Sono state aggiunte le precedenze alle operazioni delle Expr per risolvere i conflitti.
 
-- È stato aggiunto il nodo ElseOP in modo tale da poter accedere alla sua table di scope più
+- È stato aggiunto il nodo ElseOP in modo tale da poter accedere alla sua tabella di scope più
   facilmente.
 
 ## Testing
@@ -54,25 +54,27 @@ Nel Run di [ParserTester](src/main/esercitazione5/ParserTester.java) sarà possi
 dei seguenti visitor.
 
 1. **DebugVisitor**: dopo aver fatto il parsing del source, visita l'AST e riscrive dall'
-   AST il source.
+   AST il source in Toy2.
    Il source riscritto sarà equivalente nel significato ma alcune cose cambieranno come ad esempio
    ogni VarDecl inizierà con _var_ mentre in Toy2 possiamo scrivere la keyword una volta e poi
    dichiarare
-   più VarDecl. Anche l'ordine di scrittura dei vari costrutti nello scope _GLOBAL_ non sarà
-   mantenuto.
+   più VarDecl.
+   Le dichiarazioni di variabili verranno messe sempre all'inizio di ogni scope.
 
-2. **GraphvizASTVisitor** genera codice _[dot lang](https://graphviz.org/doc/info/lang.html)_, il
-   quale
-   è usato da [Graphviz](https://graphviz.org/) per generare graficamente l'AST. Sarà stampato a
-   video il _dot lang_, è possibile copiarlo e incollarlo
-   su [questo sito](http://magjac.com/graphviz-visual-editor/)
-   per visualizzare l'AST. Dal sito è possibile esplorare l'AST, per muoversi nell'albero basta
-   tenere premuto CTRL
-   e usare il mouse per trascinare.
+2. **GraphvizASTVisitor** genera codice
+   _[dot lang](https://graphviz.org/doc/info/lang.html)_, il
+   quale è usato da [Graphviz](https://graphviz.org/) per generare graficamente l'AST.
+   Sarà stampato
+   a video il _dot lang_, è possibile copiarlo e incollarlo
+   su [questo sito](http://magjac.com/graphviz-visual-editor/) per visualizzare l'AST.
+   Dal sito è
+   possibile esplorare l'AST, per muoversi nell'albero basta tenere premuto CTRL e usare il mouse
+   per trascinare..
 
 Qui sotto un esempio di AST sull'[input1.txt](/src/test_files/input1.txt), ossia il codice di
 esempio presente su e-learning.
 [Link all'immagine.](src/main/esercitazione5/images/AST_input1.svg)
+
 ![AST_input1.png](src/main/esercitazione5/images/AST_input1.png)
 
 ### Scoping
@@ -82,6 +84,20 @@ dei seguenti visitor.
 
 1. **ScopingVisitor**: dopo aver fatto il parsing del source, visita l'AST e crea le tabelle di
    scope.
+2. **GraphvizScopeTablesVisitor** genera codice
+   _[dot lang](https://graphviz.org/doc/info/lang.html)_, il
+   quale è usato da [Graphviz](https://graphviz.org/) per generare graficamente le tabelle di scoping. Sarà stampato
+   a video il _dot lang_, è possibile copiarlo e incollarlo
+   su [questo sito](http://magjac.com/graphviz-visual-editor/) per visualizzare le Tabelle di
+   Scoping. Dal sito è
+   possibile esplorare le tabelle, per muoversi tenere premuto CTRL e usare il mouse
+   per trascinare.
+
+Qui sotto un esempio di tabelle di scoping sull'[input1.txt](/src/test_files/input1.txt), ossia il
+codice di esempio presente su e-learning.
+[Link all'immagine.](src/main/esercitazione5/images/Scope_input1.svg)
+
+![AST_input1.png](src/main/esercitazione5/images/Scope_input1.png)
 
 ## Gestione errori
 
@@ -108,3 +124,6 @@ In [src/test_files/math.txt](src/test_files/math.txt) c'è il source code di Mat
 
 In [src/main/esercitazione4/images/AST_math.svg](src/main/esercitazione5/images/AST_math.svg) c'è il
 suo AST.
+
+In [src/main/esercitazione4/images/Scope_math.svg](src/main/esercitazione5/images/Scope_math.svg) ci
+sono le sue tabelle di scoping.

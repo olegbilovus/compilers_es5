@@ -315,7 +315,7 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
     v.setScopeTable(scopeTable);
     nodeTable(scopeTable, v.getBody());
 
-    // ELIF and ELSE do NOT have to have access to the IF table
+    // ELIF and ELSE have not the If table among their active tables
     visitNodeList(v.getElifOPList());
     visitNode(v.getElse());
 
@@ -375,4 +375,8 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
     }
   }
 
+  // this is added just to have every Visitor return a String
+  @Override public String toString() {
+    return "Scoping succeeded";
+  }
 }

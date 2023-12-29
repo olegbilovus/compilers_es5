@@ -2,7 +2,6 @@ package main.esercitazione5.visitors;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import main.esercitazione5.StringTable;
@@ -44,7 +43,6 @@ import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
-import main.esercitazione5.ast.nodes.stat.Stat;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
 import main.esercitazione5.scope.ScopeEntry;
@@ -54,16 +52,12 @@ import main.esercitazione5.scope.ScopeType;
 
 public class GraphvizScopeTablesVisitor extends Visitor<String> {
 
-  private final Deque<ScopeTable> stack;
-  private final Deque<HashMap<Integer, Integer>> arrows;
-  private final StringBuilder arrowsToReturn = new StringBuilder();
-  private final StringBuilder arrowsRankToReturn = new StringBuilder();
+  private final Deque<Integer> stackParentTableNum;
   private int tableCount = 0;
 
   public GraphvizScopeTablesVisitor(StringTable stringTable) {
     super(stringTable);
-    stack = new ArrayDeque<>();
-    arrows = new ArrayDeque<>();
+    stackParentTableNum = new ArrayDeque<>();
   }
 
   @Override public String visit(IdNode v) {
@@ -71,23 +65,14 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
   }
 
   @Override public String visit(ProgramOP v) {
-    arrows.push(new HashMap<>());
     StringBuilder toReturn =
         new StringBuilder("digraph g {\nnode[ shape = none, fontname = \"Arial\" ];\n");
-    stack.push(v.getScopeTable());
-
-    toReturn.append(genTable("GLOBALS", ProgramOP.class, null));
+    genTable(toReturn, v.getScopeTable(), "GLOBALS", ProgramOP.class);
 
     genList(toReturn, v.getFunOPList());
     genList(toReturn, v.getProcOPList());
 
-    arrowsToReturn.append("{ rank = same; ");
-    for (Integer tableId : arrows.getFirst().values()) {
-      arrowsToReturn.append("table").append(tableId).append(" ");
-    }
-    arrowsToReturn.append("}\n");
-
-    toReturn.append(arrowsToReturn).append(arrowsRankToReturn).append("\n}");
+    toReturn.append("\n}");
 
     return toReturn.toString();
   }
@@ -97,37 +82,32 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
   }
 
   @Override public String visit(FunOP v) {
-    // add params to function table
     StringBuilder toReturn = new StringBuilder();
-    stack.push(v.getScopeTable());
-    toReturn.append(genTable(st(v.getId()), FunOP.class, v.getId().getId()));
+    // process FunOP table
+    genTable(toReturn, v.getScopeTable(), st(v.getId()), FunOP.class);
+    // process other Stats tables
+    genNode(toReturn, v.getBodyOP());
 
-    // process body, arrows pushed later because need the prev arrows in the prev gen
-    arrows.push(new HashMap<>());
-    toReturn.append(v.getBodyOP().accept(this));
-    stack.pop();
-    arrows.pop();
+    stackParentTableNum.pop();
 
     return toReturn.toString();
   }
 
   @Override public String visit(ProcOP v) {
-    // add params to procedure table
     StringBuilder toReturn = new StringBuilder();
-    stack.push(v.getScopeTable());
-    toReturn.append(genTable(st(v.getId()), ProcOP.class, v.getId().getId()));
+    // process ProcOP table
+    genTable(toReturn, v.getScopeTable(), st(v.getId()), ProcOP.class);
 
-    // process body, arrows pushed later because need the prev arrows in the prev gen
-    arrows.push(new HashMap<>());
-    toReturn.append(v.getBodyOP().accept(this));
-    stack.pop();
-    arrows.pop();
+    // process other Stats tables
+    genNode(toReturn, v.getBodyOP());
+
+    stackParentTableNum.pop();
 
     return toReturn.toString();
   }
 
   @Override public String visit(ProcFunParamOP v) {
-    // it is already in the procedure table
+    // it is already in the parent table
     return "";
   }
 
@@ -135,11 +115,7 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
     StringBuilder toReturn = new StringBuilder();
     // VarDecls are already in the parent table
 
-    if (!Utility.isListEmpty(v.getStatList())) {
-      for (Stat stat : v.getStatList()) {
-        toReturn.append(stat.accept(this));
-      }
-    }
+    genList(toReturn, v.getStatList());
 
     return toReturn.toString();
   }
@@ -249,82 +225,62 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
   }
 
   @Override public String visit(WhileOP v) {
-    // add VarDecls to table
     StringBuilder toReturn = new StringBuilder();
-    stack.push(v.getScopeTable());
-    toReturn.append(genTable("", WhileOP.class, null));
+    // process WhileOP table
+    genTable(toReturn, v.getScopeTable(), "", WhileOP.class);
 
-    // process body, arrows pushed later because need the prev arrows in the prev gen
-    arrows.push(new HashMap<>());
-    if (v.getBody() != null) {
-      toReturn.append(v.getBody().accept(this));
-    }
-    stack.pop();
-    arrows.pop();
+    // process other Stats tables
+    genNode(toReturn, v.getBody());
+
+    stackParentTableNum.pop();
 
     return toReturn.toString();
   }
 
   @Override public String visit(IfOP v) {
-    // add VarDecls to table
     StringBuilder toReturn = new StringBuilder();
-    stack.push(v.getScopeTable());
-    toReturn.append(genTable("", WhileOP.class, null));
+    // process IfOP table
+    genTable(toReturn, v.getScopeTable(), "", IfOP.class);
 
-    // process body, arrows pushed later because need the prev arrows in the prev gen
-    arrows.push(new HashMap<>());
-    if (v.getBody() != null) {
-      toReturn.append(v.getBody().accept(this));
-    }
-    stack.pop();
-    arrows.pop();
+    // process other Stats tables
+    genNode(toReturn, v.getBody());
 
-    if (!Utility.isListEmpty(v.getElifOPList())) {
-      for (ElifOP elifOP : v.getElifOPList()) {
-        toReturn.append(elifOP.accept(this));
-      }
-    }
-
-    if (v.getElse() != null) {
-      toReturn.append(v.getElse().accept(this));
-    }
+    // this is needed because Elif and Else have NOT the If table among their active tables
+    stackParentTableNum.pop();
+    // process ElifOP tables
+    genList(toReturn, v.getElifOPList());
+    // process Else table
+    genNode(toReturn, v.getElse());
 
     return toReturn.toString();
   }
 
   @Override public String visit(ElifOP v) {
-    // add VarDecls to table
     StringBuilder toReturn = new StringBuilder();
-    stack.push(v.getScopeTable());
-    toReturn.append(genTable("", ElifOP.class, null));
+    // process ElifOP table
+    genTable(toReturn, v.getScopeTable(), "", ElifOP.class);
 
-    // process body, arrows pushed later because need the prev arrows in the prev gen
-    arrows.push(new HashMap<>());
-    if (v.getBody() != null) {
-      toReturn.append(v.getBody().accept(this));
-    }
-    stack.pop();
-    arrows.pop();
+    // process other Stats tables
+    genNode(toReturn, v.getBody());
+
+    stackParentTableNum.pop();
 
     return toReturn.toString();
   }
 
   @Override public String visit(ElseOP v) {
-    // add VarDecls to table
     StringBuilder toReturn = new StringBuilder();
-    stack.push(v.getScopeTable());
-    toReturn.append(genTable("", ElseOP.class, null));
+    // process ElseOP table
+    genTable(toReturn, v.getScopeTable(), "", ElseOP.class);
 
-    // process body, arrows pushed later because need the prev arrows in the prev gen
-    arrows.push(new HashMap<>());
-    if (v.getBody() != null) {
-      toReturn.append(v.getBody().accept(this));
-    }
-    stack.pop();
-    arrows.pop();
+    // process other Stats tables
+    genNode(toReturn, v.getBody());
+
+    stackParentTableNum.pop();
 
     return toReturn.toString();
   }
+
 
   private <T extends Node> void genList(StringBuilder toReturn, List<T> list) {
     if (!Utility.isListEmpty(list)) {
@@ -334,75 +290,68 @@ public class GraphvizScopeTablesVisitor extends Visitor<String> {
     }
   }
 
-  private String genTableName(String name, Class claz) {
-    return "<b>" + name + " [" + claz.getSimpleName() + "]</b>";
-
+  private <T extends Node> void genNode(StringBuilder toReturn, T node) {
+    if (node != null) {
+      toReturn.append(node.accept(this));
+    }
   }
 
-  private String genTableHeader(String name, Class claz, Integer id) {
-    Integer tableId = id == null ? null : arrows.getFirst().get(id);
-    if (tableId == null) {
-      tableId = ++tableCount;
-    }
+  private String genTableHeader(String name, Class claz) {
+    Integer tableId = ++tableCount;
+    stackParentTableNum.push(tableId);
+
     return "table" + tableId + "[ label=<\n"
         + "<table border=\"0\" cellborder=\"1\" cellspacing=\"0\" cellpadding=\"4\">\n" + "<tr>\n"
-        + "<td port=\"0\" colspan=\"3\">" + genTableName(name, claz) + "</td>\n" + "</tr>\n";
+        + "<td colspan=\"3\">" + "<b>" + name + " [" + claz.getSimpleName() + "]</b>" + "</td>\n"
+        + "</tr>\n";
   }
 
-  private String genArrow(Integer id1, Integer entry1, Integer id2) {
-    return "table" + id1 + ":" + entry1 + " -> table" + id2 + ":0;\n";
-  }
-
-  private String genTable(String name, Class claz, Integer id) {
-    ScopeTable scopeTable = stack.getFirst();
-    StringBuilder toReturn = new StringBuilder(genTableHeader(name, claz, id));
-    int entryCounter = 0;
-    int parentTableCount = tableCount;
+  private void genTable(StringBuilder toReturn, ScopeTable scopeTable, String name, Class claz) {
+    if (scopeTable.getTable().isEmpty()) {
+      // this push is done to avoid issues with the indexes and the stack
+      stackParentTableNum.push(++tableCount);
+      return;
+    }
+    Integer parentTableNum = stackParentTableNum.peekFirst();
+    toReturn.append(genTableHeader(name, claz));
     for (Entry<Integer, ScopeEntry> entry : scopeTable.getTable().entrySet()) {
-      toReturn.append("<tr>\n").append("<td ").append("port=\"").append(++entryCounter)
-          .append("\">").append(st(entry.getKey())).append("</td>\n");
+      toReturn.append("<tr>\n<td>").append(st(entry.getKey())).append("</td>\n");
 
       ScopeEntry scopeEntry = entry.getValue();
-      switch (scopeEntry.getKind()) {
-        case FUN, PROC -> {
-          arrowsToReturn.append(genArrow(parentTableCount, entryCounter, ++tableCount));
-          arrows.getFirst().put(entry.getKey(), tableCount);
-        }
-        default -> { /* do nothing */}
-      }
-
-      toReturn.append("<td ").append("port=\"").append(++entryCounter).append("\">")
-          .append(scopeEntry.getKind().name()).append("</td>\n");
+      toReturn.append("<td>").append(scopeEntry.getKind().name()).append("</td>\n");
 
       boolean args = !Utility.isListEmpty(scopeEntry.getListType1());
       boolean returns = !Utility.isListEmpty(scopeEntry.getListType2());
-
-      toReturn.append("<td ").append("port=\"").append(++entryCounter).append("\">");
-      if (args || returns) {
-        if (args) {
-          for (ScopeType t : scopeEntry.getListType1()) {
-            if (scopeEntry.getKind() != ScopeKind.VAR) {
-              toReturn.append(t.paramAccess().name()).append(":");
-            }
-            toReturn.append(t.type().name()).append(", ");
+      toReturn.append("<td>");
+      if (args) {
+        for (ScopeType t : scopeEntry.getListType1()) {
+          if (scopeEntry.getKind() != ScopeKind.VAR) {
+            toReturn.append(t.paramAccess().name()).append(":");
           }
-          Utility.deleteLastCommaSpace(toReturn);
+          toReturn.append(t.type().name()).append(", ");
         }
-        if (returns) {
-          toReturn.append(" &rarr; ");
-          for (Type t : scopeEntry.getListType2()) {
-            toReturn.append(t.name()).append(", ");
-          }
-          Utility.deleteLastCommaSpace(toReturn);
-        }
+        Utility.deleteLastCommaSpace(toReturn);
       }
-      toReturn.append("</td>\n");
+      if (returns) {
+        toReturn.append(" &rarr; ");
+        for (Type t : scopeEntry.getListType2()) {
+          toReturn.append(t.name()).append(", ");
+        }
+        Utility.deleteLastCommaSpace(toReturn);
+      }
 
-      toReturn.append("</tr>\n");
-
+      toReturn.append("</td>\n</tr>\n");
     }
 
     toReturn.append("</table>>];\n\n");
-    return toReturn.toString();
+    toReturn.append(genEdge(parentTableNum));
   }
+
+  private String genEdge(Integer parentTableNum) {
+    if (stackParentTableNum.size() < 2) {
+      return "";
+    }
+    return "table" + parentTableNum + " -> table" + stackParentTableNum.getFirst() + ";\n";
+  }
+
 }

@@ -2,7 +2,7 @@
   <configuration default="false" name="Main" type="Application" factoryName="Application" nameIsGenerated="true">
     <option name="MAIN_CLASS_NAME" value="main.esercitazione5.Main" />
     <module name="bilovus_es5" />
-    <option name="PROGRAM_PARAMETERS" value="-i src/test_files/input2.txt -o out.dot" />
+    <option name="PROGRAM_PARAMETERS" value="-i src/test_files/input1.txt -o out.dot --graphviz_ast" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="main.esercitazione5.*" />
