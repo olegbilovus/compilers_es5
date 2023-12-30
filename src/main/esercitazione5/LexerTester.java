@@ -1,18 +1,13 @@
 package main.esercitazione5;
 
-import java.io.File;
 import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java_cup.runtime.Symbol;
 
 public class LexerTester {
 
   public static void main(String[] args)
       throws Exception {
-    String filePath =
-        args[0] + File.separator + "src" + File.separator + "test_files" + File.separator + args[1];
-    StringReader in = new StringReader(Files.readString(Paths.get(filePath)));
+    StringReader in = Utility.readFile(args[0], args[1]);
     Yylex lexer = new Yylex(in);
 
     System.out.println("\nTokens:");

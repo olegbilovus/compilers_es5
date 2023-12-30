@@ -8,7 +8,7 @@ import main.esercitazione5.scope.ScopeKind;
 import main.esercitazione5.scope.ScopeTable;
 import main.esercitazione5.scope.ScopeType;
 import main.esercitazione5.scope.exceptions.AlreadyDeclaredScopeException;
-import main.esercitazione5.scope.exceptions.VarDeclOPScopeException;
+import main.esercitazione5.semantic.exceptions.NumIdsNumConstsDiffSemanticException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -58,7 +58,7 @@ public class VarDeclOPTest {
   public void invalid() {
 
     // number of IDs different from number of Constants
-    Assertions.assertThrows(VarDeclOPScopeException.class,
+    Assertions.assertThrows(NumIdsNumConstsDiffSemanticException.class,
         () -> init("var a ^= 4.5, 5;\\ proc main(): endproc"));
 
     // redefine the variable

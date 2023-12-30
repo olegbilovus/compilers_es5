@@ -8,6 +8,7 @@ import main.esercitazione5.scope.ScopeEntry;
 import main.esercitazione5.scope.ScopeKind;
 import main.esercitazione5.scope.ScopeTable;
 import main.esercitazione5.scope.exceptions.AlreadyDeclaredScopeException;
+import main.esercitazione5.scope.exceptions.NumReturnExprIncorrectScopeException;
 import main.esercitazione5.scope.exceptions.UndeclaredScopeException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ public class FunOPTest {
     Assertions.assertEquals(1, ScopingUtility.numPrevTables(scopeTable));
 
     programOP = ScopingUtility.astScoped(
-        "func f(a: integer, b: real) -> real, boolean: var x ^= 45;\\ endfunc proc main(): endproc");
+        "func f(a: integer, b: real) -> real, boolean: var x ^= 45;\\ return 1, false; endfunc proc main(): endproc");
     global = programOP.getScopeTable();
     entry = global.lookup(1, null);
     Assertions.assertEquals(ScopeKind.FUN, entry.getKind());
@@ -46,6 +47,36 @@ public class FunOPTest {
     scopeTable = init(programOP);
     Assertions.assertEquals(3, scopeTable.getTable().size());
     Assertions.assertEquals(1, ScopingUtility.numPrevTables(scopeTable));
+
+    Assertions.assertDoesNotThrow(
+        () -> ScopingUtility.astScoped(
+            "func f(a: real) -> real, boolean: return 1, false; endfunc proc main(): endproc"));
+
+    Assertions.assertDoesNotThrow(
+        () -> ScopingUtility.astScoped(
+            "func f(a: real, b: boolean) -> real, boolean: return f(1, true); endfunc proc main(): endproc"));
+
+    String source = """
+        func f(a: real) -> real, boolean:
+          return g();
+        endfunc
+        func g() -> real, boolean:
+          return 0, true;
+        endfunc
+        proc main(): endproc""";
+    Assertions.assertDoesNotThrow(
+        () -> ScopingUtility.astScoped(source));
+
+    String source1 = """
+        func f(a: real) -> real, boolean, integer:
+          return g(), 3;
+        endfunc
+        func g() -> real, boolean:
+          return 0, true;
+        endfunc
+        proc main(): endproc""";
+    Assertions.assertDoesNotThrow(
+        () -> ScopingUtility.astScoped(source1));
   }
 
   @Test
@@ -59,11 +90,40 @@ public class FunOPTest {
     // redefine a parameter inside the body
     Assertions.assertThrows(AlreadyDeclaredScopeException.class,
         () -> ScopingUtility.astScoped(
-            "func f(a: real) -> real: var a: string;\\ endfunc proc main(): endproc"));
+            "func f(a: real) -> real: var a: string;\\ return 1; endfunc proc main(): endproc"));
 
     // return not existing variable
     Assertions.assertThrows(UndeclaredScopeException.class,
         () -> ScopingUtility.astScoped(
             "func f(a: real) -> real: return c; endfunc proc main(): endproc"));
+
+    // the number of returned expressions is different from the function's signature
+    Assertions.assertThrows(NumReturnExprIncorrectScopeException.class,
+        () -> ScopingUtility.astScoped(
+            "func f(a: real) -> real, boolean: return 1; endfunc proc main(): endproc"));
+
+    // g returns diff number of args than f
+    String source = """
+        func f(a: real) -> real, boolean:
+          return g();
+        endfunc
+        func g() -> real:
+          return 0;
+        endfunc
+        proc main(): endproc""";
+    Assertions.assertThrows(NumReturnExprIncorrectScopeException.class,
+        () -> ScopingUtility.astScoped(source));
+
+    // g returns not enough args
+    String source1 = """
+        func f(a: real) -> real, boolean, integer:
+          return g();
+        endfunc
+        func g() -> real:
+          return 0;
+        endfunc
+        proc main(): endproc""";
+    Assertions.assertThrows(NumReturnExprIncorrectScopeException.class,
+        () -> ScopingUtility.astScoped(source1));
   }
 }

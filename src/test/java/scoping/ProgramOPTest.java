@@ -2,6 +2,7 @@ package test.java.scoping;
 
 import main.esercitazione5.scope.ScopeTable;
 import main.esercitazione5.scope.exceptions.AlreadyDeclaredScopeException;
+import main.esercitazione5.semantic.exceptions.MissingMainProcSemanticException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -85,6 +86,7 @@ public class ProgramOPTest {
     Assertions.assertEquals(7, scopeTable.getTable().size());
   }
 
+  @Test
   public void invalid() {
 
     String source =
@@ -109,7 +111,9 @@ public class ProgramOPTest {
             """;
     Assertions.assertThrows(AlreadyDeclaredScopeException.class, () -> init(source));
 
-    String source1 = "fun f() -> real: endfun proc main() endproc var f: boolean;\n";
+    String source1 = "func f() -> real: return 1; endfunc proc main(): endproc var f: boolean;\\";
     Assertions.assertThrows(AlreadyDeclaredScopeException.class, () -> init(source1));
+
+    Assertions.assertThrows(MissingMainProcSemanticException.class, () -> init("var a: real;\\"));
   }
 }

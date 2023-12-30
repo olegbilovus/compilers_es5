@@ -6,6 +6,7 @@ import main.esercitazione5.ast.nodes.ProgramOP;
 import main.esercitazione5.parser;
 import main.esercitazione5.scope.ScopeTable;
 import main.esercitazione5.visitors.ScopingVisitor;
+import main.esercitazione5.visitors.SemanticVisitor;
 
 public class ScopingUtility {
 
@@ -17,6 +18,7 @@ public class ScopingUtility {
     Yylex lexer = new Yylex(source);
     parser p = new parser(lexer);
     ProgramOP programOP = (ProgramOP) p.parse().value;
+    programOP.accept(new SemanticVisitor(lexer.getStringTable()));
     ScopingVisitor scopingVisitor = new ScopingVisitor(lexer.getStringTable());
     programOP.accept(scopingVisitor);
 

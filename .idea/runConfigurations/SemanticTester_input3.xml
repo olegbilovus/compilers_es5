@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="SemanticTester_input3" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="main.esercitazione5.SemanticTester" />
+    <module name="bilovus_es5" />
+    <option name="PROGRAM_PARAMETERS" value="$ProjectFileDir$ input3.txt" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="main.esercitazione5.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

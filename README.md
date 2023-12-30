@@ -30,12 +30,18 @@ Dopo le seguenti modifiche, la grammatica non presenta più alcun conflitto.
   stessa. Questo ha permesso di usare più generalizzazione nel codice.
 
 - In _Function_ non è permesso avere un _Body_ vuoto. Questo perché Function per definizione ritorna
-  una o più espressioni. Nella fase semantica si controllerà che Body abbia una ReturnOP.
+  una o più espressioni. Nella fase semantica si controllerà che nella lista degli Stat del Body ci
+  sia alla fine una ReturnOP.
 
 - Sono state aggiunte le precedenze alle operazioni delle Expr per risolvere i conflitti.
 
 - È stato aggiunto il nodo ElseOP in modo tale da poter accedere alla sua tabella di scope più
   facilmente.
+
+- Non è possibile usare una funzione che ritorna 0 o più di 1 valore come
+  argomento di una chiamata a funzione/procedura oppure un operatore binario o unario.
+  Questo controllo avviene nella semantica ed è stato scelto di fare così perché altrimenti
+  complicherebbe molto la generazione del linguaggio target C.
 
 ## Testing
 
@@ -69,7 +75,7 @@ dei seguenti visitor.
    su [questo sito](http://magjac.com/graphviz-visual-editor/) per visualizzare l'AST.
    Dal sito è
    possibile esplorare l'AST, per muoversi nell'albero basta tenere premuto CTRL e usare il mouse
-   per trascinare..
+   per trascinare.
 
 Qui sotto un esempio di AST sull'[input1.txt](/src/test_files/input1.txt), ossia il codice di
 esempio presente su e-learning.
@@ -77,20 +83,31 @@ esempio presente su e-learning.
 
 ![AST_input1.png](src/main/esercitazione5/images/AST_input1.png)
 
+### Semantic
+
+Nel Run di [SemanticTester](src/main/esercitazione5/SemanticTester.java) verrà usato il seguente
+visitor.
+
+**SemanticVisitor**: dopo aver fatto il parsing del source, visita l'AST e controlla alcune delle
+regole semantiche.
+Altre regole semantiche vengono controllate nella fase di scoping in quanto servono le tabelle di
+scoping.
+
 ### Scoping
 
 Nel Run di [ScopingTester](src/main/esercitazione5/ScopingTester.java) sarà possibile scegliere uno
 dei seguenti visitor.
 
 1. **ScopingVisitor**: dopo aver fatto il parsing del source, visita l'AST e crea le tabelle di
-   scope.
+   scope, vengono anche effettuati tutti controlli semantici.
 2. **GraphvizScopeTablesVisitor** genera codice
    _[dot lang](https://graphviz.org/doc/info/lang.html)_, il
-   quale è usato da [Graphviz](https://graphviz.org/) per generare graficamente le tabelle di scoping. Sarà stampato
-   a video il _dot lang_, è possibile copiarlo e incollarlo
+   quale è usato da [Graphviz](https://graphviz.org/) per generare graficamente le tabelle di
+   scoping.
+   Sarà stampato a video il _dot lang_, è possibile copiarlo e incollarlo
    su [questo sito](http://magjac.com/graphviz-visual-editor/) per visualizzare le Tabelle di
-   Scoping. Dal sito è
-   possibile esplorare le tabelle, per muoversi tenere premuto CTRL e usare il mouse
+   Scoping.
+   Dal sito è possibile esplorare le tabelle, per muoversi tenere premuto CTRL e usare il mouse
    per trascinare.
 
 Qui sotto un esempio di tabelle di scoping sull'[input1.txt](/src/test_files/input1.txt), ossia il
@@ -101,17 +118,40 @@ codice di esempio presente su e-learning.
 
 ## Gestione errori
 
-- In caso ci sia un errore del Lexer si continua l'analisi emettendo un token _\<error\>_.
-- In caso ci sia un errore del Parser, questo viene gestito da CUP.
-- Nel caso ci sia un errore nello Scoping, viene segnalato nella console su quale simbolo è l'errore
-  e quale è il source code che lo compone. Gli errori di Scoping considerati sono:
+- In caso ci sia un errore del **Lexer** si continua l'analisi emettendo un token _\<error\>_.
+- In caso ci sia un errore del **Parser**, questo viene gestito da CUP.
+- Nel caso ci sia uno degli errori **Semantico**, viene segnalato nella console su quale simbolo è
+  l'errore e quale è il source code che lo compone.
+  Gli errori Semantici considerati sono:
+    - [MissingMainProc](src/main/esercitazione5/semantic/exceptions/MissingMainProcSemanticException.java)
+    - [MissingReturnInFunc](src/main/esercitazione5/semantic/exceptions/MissingReturnInFuncSemanticException.java)
+    - [NumIdsNumConstsDiff](src/main/esercitazione5/semantic/exceptions/NumIdsNumConstsDiffSemanticException.java)
+      viene utilizzato quando in una initialization il numero di variabili è diverso dal numero di
+      costanti.
+    - [ReturnInProc](src/main/esercitazione5/semantic/exceptions/ReturnInProcSemanticException.java)
+- Nel caso ci sia un errore nello **Scoping**, viene segnalato nella console su quale simbolo è
+  l'errore e quale è il source code che lo compone.
+  Gli errori di Scoping considerati sono:
     - [AlreadyDeclared](src/main/esercitazione5/scope/exceptions/AlreadyDeclaredScopeException.java)
     - [Undeclared](src/main/esercitazione5/scope/exceptions/UndeclaredScopeException.java)
-    - [VarDecl](src/main/esercitazione5/scope/exceptions/VarDeclOPScopeException.java) viene
-      utilizzato quando in una initialization il numero di variabili è diverso dal numero di
-      costanti.
-      È possibile vedere degli esempi in [VarDeclOPTest](src/test/java/scoping/VarDeclOPTest.java)
-      nel metodo di testing di input invalido.
+    - [NotAFunc](src/main/esercitazione5/scope/exceptions/NotAFuncScopeException.java) viene
+      utilizzato quando si cerca di fare chiamata a funzione di un identificatore che in quel
+      scope non è una funzione.
+    - [NotAProc](src/main/esercitazione5/scope/exceptions/NotAProcScopeException.java) viene
+      utilizzato quando si cerca di fare chiamata a procedura di un identificatore che in quel
+      scope non è una procedura.
+    - [NumAssignExprIncorrect](src/main/esercitazione5/scope/exceptions/NumAssignExprIncorrectScopeException.java)
+      viene utilizzato quando il numero di Expr è diverso dal numero di variabili in
+      un'assegnamento.
+    - [NumArgsExprIncorrect](src/main/esercitazione5/scope/exceptions/NumArgsExprIncorrectScopeException.java)
+      viene utilizzato quando si passa un numero errato di argomenti alla chiamata di una funzione
+      o procedura.
+    - [NumReturnExprIncorrect](src/main/esercitazione5/scope/exceptions/NumReturnExprIncorrectScopeException.java)
+      viene utilizzato quando in una funzione il return non ritorna lo stesso numero di valori
+      dichiarati nella signature della funzione.
+    - [FuncMultReturnVal](src/main/esercitazione5/scope/exceptions/FuncMultReturnValScopeException.java)
+      viene utilizzato quando in una chiamata a funzione o procedura si passa come argomento una
+      funzione che ritorna 0 o più di 1 valore.
 
 ## Programma Math in Toy2
 

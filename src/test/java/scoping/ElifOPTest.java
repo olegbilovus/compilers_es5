@@ -17,13 +17,13 @@ public class ElifOPTest {
   public void valid() throws Exception {
     ScopeTable scopeTable =
         init(
-            "func f() -> real: if true then elseif false then endif; endfunc proc main(): endproc");
+            "func f() -> real: if true then elseif false then endif; return 1.1; endfunc proc main(): endproc");
     Assertions.assertTrue(scopeTable.getTable().isEmpty());
     // expecting 2 prev tables because Elif does NOT have to include the If table in its active tables
     Assertions.assertEquals(2, ScopingUtility.numPrevTables(scopeTable));
 
     scopeTable = init(
-        "func f() -> real: if true then elseif false then var a ^= true;\\ endif; endfunc proc main(): endproc");
+        "func f() -> real: if true then elseif false then var a ^= true;\\ endif; return 1; endfunc proc main(): endproc");
     Assertions.assertEquals(1, scopeTable.getTable().size());
     Assertions.assertEquals(2, ScopingUtility.numPrevTables(scopeTable));
   }

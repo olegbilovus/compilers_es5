@@ -21,14 +21,14 @@ public class ProcFunParamOPTest {
   @Test
   public void valid() throws Exception {
     ScopeTable scopeTable = initFun(
-        "func f(a: integer) -> real, boolean: return 1.2; endfunc proc main(): endproc");
+        "func f(a: integer) -> real, boolean: return 1.2, true; endfunc proc main(): endproc");
     ScopeEntry entry = scopeTable.lookup(2, null);
     Assertions.assertEquals(ScopeKind.VAR, entry.getKind());
     Assertions.assertEquals(Type.INTEGER, entry.getListType1().get(0).type());
     Assertions.assertEquals(ParamAccess.IN, entry.getListType1().get(0).paramAccess());
 
     scopeTable = initFun(
-        "func f(a: string, b: boolean) -> real, boolean: return 1.2; endfunc proc main(): endproc");
+        "func f(a: string, b: boolean) -> real, boolean: return 1.2, true; endfunc proc main(): endproc");
     entry = scopeTable.lookup(2, null);
     Assertions.assertEquals(ScopeKind.VAR, entry.getKind());
     Assertions.assertEquals(Type.STRING, entry.getListType1().get(0).type());

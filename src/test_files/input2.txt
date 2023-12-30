@@ -36,7 +36,8 @@ proc p(out a: integer, b: boolean):
   endif;
 
   while a <= 10 do
-    r ^= a * a;
+    var f: real;\
+    r, a ^= f();
     a ^= a + 1;
     var v: integer;\
     v ^= 4 + a;

@@ -106,7 +106,7 @@ Type ::= REAL
        | BOOLEAN
          {: RESULT = Type.BOOLEAN; :}
 ;
-             /* Function must have a Body because it has to return something and [the ReturnOP is in the Body] */
+             /* Function must have a Body because it has to return something and [the ReturnOP is in the Body at the end] */
 Function ::= FUNCTION ID:i LPAR FuncParams:fp RPAR TYPERETURN Types:tt COLON Body:b ENDFUNCTION
              {: RESULT = new FunOP(new IdNode(i), fp, tt, b); :}
            | FUNCTION ID:i LPAR RPAR TYPERETURN Types:tt COLON Body:b ENDFUNCTION

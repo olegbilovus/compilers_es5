@@ -14,13 +14,13 @@ public class WhileOPTest {
   @Test
   public void valid() throws Exception {
     ScopeTable scopeTable =
-        init("func f() -> real: while true do endwhile; endfunc proc main(): endproc");
+        init("func f() -> real: while true do endwhile; return 1.1; endfunc proc main(): endproc");
     Assertions.assertTrue(scopeTable.getTable().isEmpty());
     Assertions.assertEquals(2, ScopingUtility.numPrevTables(scopeTable));
 
     scopeTable =
         init(
-            "func f() -> real: while true do var a ^= 4;\\ endwhile; endfunc proc main(): endproc");
+            "func f() -> real: while true do var a ^= 4;\\ endwhile; return 1; endfunc proc main(): endproc");
     Assertions.assertEquals(1, scopeTable.getTable().size());
     Assertions.assertEquals(2, ScopingUtility.numPrevTables(scopeTable));
   }
