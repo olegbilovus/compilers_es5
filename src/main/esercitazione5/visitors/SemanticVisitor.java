@@ -253,7 +253,5 @@ public class SemanticVisitor extends Visitor<Void> {
   }
 
   // this is added just to have every Visitor return a String
-  @Override public String toString() {
-    return "Semantic succeeded";
-  }
+  public static final String SUCCESS = "Semantic succeeded";
 }

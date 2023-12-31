@@ -482,7 +482,6 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
   }
 
   // this is added just to have every Visitor return a String
-  @Override public String toString() {
-    return "Scoping succeeded";
-  }
+  public static final String SUCCESS = "Scoping succeeded";
+
 }

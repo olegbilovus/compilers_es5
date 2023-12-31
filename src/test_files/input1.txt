@@ -58,7 +58,7 @@ proc main():
 	while ans = "si" do
 	    <-- "inserisci un intero:" $(a);
 	    <-- "inserisci un reale:" $(b);
-	    sommac(a, b, @taglia, @risultato);
+	    sommac(a, x, b, @taglia, @risultato);
 	    valore ^= stampa("la somma di " + a + " e " + b +  " incrementata di " + c + " è " + taglia);
 	    valore ^= stampa(" ed è pari a " + risultato);
 	    <-- "vuoi continuare? (si/no):\t" $(ans);

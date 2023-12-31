@@ -50,7 +50,7 @@ proc main():
     if op = 1 then
       rsomma(r1, r2, @rres);
     elseif op = 2 then
-      rdiffr(i1, r2, @rres);
+      rdiff(i1, r2, @rres);
     elseif op = 3 then
       rmul(r1, r2, @rres);
     else

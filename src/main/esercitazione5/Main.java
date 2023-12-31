@@ -13,7 +13,6 @@ import main.esercitazione5.visitors.GraphvizASTVisitor;
 import main.esercitazione5.visitors.GraphvizScopeTablesVisitor;
 import main.esercitazione5.visitors.ScopingVisitor;
 import main.esercitazione5.visitors.SemanticVisitor;
-import main.esercitazione5.visitors.Visitor;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -55,7 +54,7 @@ public class Main {
 
     if (fileInput == null) {
       System.out.println("Paste the Toy2 source, hit Return, then Cmd-D (in MacOs) "
-          + "or Ctrl-D (in Windows)");
+          + "or Ctrl-Z (in Windows)");
       InputStreamReader inp = new InputStreamReader(System.in);
       reader = new BufferedReader(inp);
     } else {
@@ -73,25 +72,26 @@ public class Main {
       chosenVisitor[i] = val != null && val;
     }
 
-    Visitor visitor;
+    String visitorRes;
 
     if (chosenVisitor[0]) {
       ast.accept(new SemanticVisitor(st));
       ast.accept(new ScopingVisitor(st));
-      visitor = new GraphvizScopeTablesVisitor(st);
+      visitorRes = ast.accept(new GraphvizScopeTablesVisitor(st));
     } else if (chosenVisitor[1]) {
       ast.accept(new SemanticVisitor(st));
-      visitor = new ScopingVisitor(st);
+      ast.accept(new ScopingVisitor(st));
+      visitorRes = ScopingVisitor.SUCCESS;
 
     } else if (chosenVisitor[2]) {
-      visitor = new SemanticVisitor(st);
+      ast.accept(new SemanticVisitor(st));
+      visitorRes = SemanticVisitor.SUCCESS;
     } else if (chosenVisitor[3]) {
-      visitor = new GraphvizASTVisitor(st);
+      visitorRes = ast.accept(new GraphvizASTVisitor(st));
     } else {
-      visitor = new DebugVisitor(st);
+      visitorRes = ast.accept(new DebugVisitor(st));
     }
 
-    String visitorRes = visitor.visit(ast).toString();
     File fileOutput = ns.get("o");
 
     if (fileOutput == null) {

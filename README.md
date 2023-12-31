@@ -38,7 +38,7 @@ Dopo le seguenti modifiche, la grammatica non presenta più alcun conflitto.
 - È stato aggiunto il nodo ElseOP in modo tale da poter accedere alla sua tabella di scope più
   facilmente.
 
-- Non è possibile usare una funzione che ritorna 0 o più di 1 valore come
+- Non è possibile usare una funzione che ritorna più di 1 valore come
   argomento di una chiamata a funzione/procedura oppure un operatore binario o unario.
   Questo controllo avviene nella semantica ed è stato scelto di fare così perché altrimenti
   complicherebbe molto la generazione del linguaggio target C.
@@ -151,7 +151,9 @@ codice di esempio presente su e-learning.
       dichiarati nella signature della funzione.
     - [FuncMultReturnVal](src/main/esercitazione5/scope/exceptions/FuncMultReturnValScopeException.java)
       viene utilizzato quando in una chiamata a funzione o procedura si passa come argomento una
-      funzione che ritorna 0 o più di 1 valore.
+      funzione che ritorna più di 1 valore.
+      Lo stesso meccanismo viene utilizzato per controllare che la chiamata a funzione ritorni un 
+      solo valore nelle operazioni binarie e unarie.
 
 ## Programma Math in Toy2
 

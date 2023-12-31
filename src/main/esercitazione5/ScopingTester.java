@@ -28,7 +28,7 @@ public class ScopingTester {
     ScopingVisitor scopingVisitor = new ScopingVisitor(lexer.getStringTable());
     ast.accept(scopingVisitor);
 
-    System.out.println(scopingVisitor + "\n");
+    System.out.println(ScopingVisitor.SUCCESS + "\n");
 
     if (c == 2) {
       System.out.println(ast.accept(new GraphvizScopeTablesVisitor(lexer.getStringTable())));

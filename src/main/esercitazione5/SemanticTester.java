@@ -16,6 +16,6 @@ public class SemanticTester {
     SemanticVisitor semanticVisitor = new SemanticVisitor(lexer.getStringTable());
     ast.accept(semanticVisitor);
 
-    System.out.println(semanticVisitor + "\n");
+    System.out.println(SemanticVisitor.SUCCESS + "\n");
   }
 }
