@@ -1,7 +1,6 @@
 package main.esercitazione5.ast.nodes.expr;
 
 import java.util.List;
-import main.esercitazione5.ast.nodes.IdNode;
 import main.esercitazione5.visitors.Visitor;
 
 public class CallFunOP extends Expr {

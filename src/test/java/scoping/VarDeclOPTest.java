@@ -27,7 +27,7 @@ public class VarDeclOPTest {
     Assertions.assertEquals(1, entry.getListType1().size());
     ScopeType scopeType = entry.getListType1().get(0);
     Assertions.assertEquals(Type.BOOLEAN, scopeType.type());
-    Assertions.assertEquals(ParamAccess.IN, scopeType.paramAccess());
+    Assertions.assertEquals(ParamAccess.INOUT, scopeType.paramAccess());
     Assertions.assertTrue(Utility.isListEmpty(entry.getListType2()));
 
     scopeTable = init("var a ^= 4.5;\\ proc main(): endproc");
@@ -37,7 +37,7 @@ public class VarDeclOPTest {
     Assertions.assertEquals(1, entry.getListType1().size());
     scopeType = entry.getListType1().get(0);
     Assertions.assertEquals(Type.REAL, scopeType.type());
-    Assertions.assertEquals(ParamAccess.IN, scopeType.paramAccess());
+    Assertions.assertEquals(ParamAccess.INOUT, scopeType.paramAccess());
     Assertions.assertTrue(Utility.isListEmpty(entry.getListType2()));
 
     scopeTable = init("var a, b ^= true, \"hello\";\\ proc main(): endproc");
@@ -47,7 +47,7 @@ public class VarDeclOPTest {
     Assertions.assertEquals(1, entry.getListType1().size());
     scopeType = entry.getListType1().get(0);
     Assertions.assertEquals(Type.STRING, scopeType.type());
-    Assertions.assertEquals(ParamAccess.IN, scopeType.paramAccess());
+    Assertions.assertEquals(ParamAccess.INOUT, scopeType.paramAccess());
     Assertions.assertTrue(Utility.isListEmpty(entry.getListType2()));
 
     // first use and later init same scope

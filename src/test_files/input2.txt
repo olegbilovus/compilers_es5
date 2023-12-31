@@ -51,6 +51,10 @@ var d, e ^= 3.4, "hello";\
 
 func f(a: integer, b: string) -> real, boolean:
   c ^= b;
+  if true then
+    var a: real;\
+    a ^= 4.4;
+  endif;
   return a, true;
 endfunc
 

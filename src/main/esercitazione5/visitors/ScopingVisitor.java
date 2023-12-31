@@ -11,7 +11,6 @@ import main.esercitazione5.ast.ParamAccess;
 import main.esercitazione5.ast.Type;
 import main.esercitazione5.ast.nodes.BodyOP;
 import main.esercitazione5.ast.nodes.FunOP;
-import main.esercitazione5.ast.nodes.IdNode;
 import main.esercitazione5.ast.nodes.Node;
 import main.esercitazione5.ast.nodes.ProcFunParamOP;
 import main.esercitazione5.ast.nodes.ProcOP;
@@ -27,7 +26,7 @@ import main.esercitazione5.ast.nodes.expr.Expr;
 import main.esercitazione5.ast.nodes.expr.FalseConstExpr;
 import main.esercitazione5.ast.nodes.expr.GEOP;
 import main.esercitazione5.ast.nodes.expr.GTOP;
-import main.esercitazione5.ast.nodes.expr.IdNodeExpr;
+import main.esercitazione5.ast.nodes.expr.IdNode;
 import main.esercitazione5.ast.nodes.expr.IntegerConstExpr;
 import main.esercitazione5.ast.nodes.expr.LEOP;
 import main.esercitazione5.ast.nodes.expr.LTOP;
@@ -53,12 +52,15 @@ import main.esercitazione5.scope.ScopeEntry;
 import main.esercitazione5.scope.ScopeKind;
 import main.esercitazione5.scope.ScopeTable;
 import main.esercitazione5.scope.ScopeType;
+import main.esercitazione5.scope.exceptions.CanNotRefAnExprScopeException;
 import main.esercitazione5.scope.exceptions.FuncMultReturnValScopeException;
+import main.esercitazione5.scope.exceptions.MissingRefSymbolScopeException;
 import main.esercitazione5.scope.exceptions.NotAFuncScopeException;
 import main.esercitazione5.scope.exceptions.NotAProcScopeException;
 import main.esercitazione5.scope.exceptions.NumArgsExprIncorrectScopeException;
 import main.esercitazione5.scope.exceptions.NumAssignExprIncorrectScopeException;
 import main.esercitazione5.scope.exceptions.NumReturnExprIncorrectScopeException;
+import main.esercitazione5.scope.exceptions.VariableReadOnlyScopeException;
 
 public class ScopingVisitor extends Visitor<ScopeTable> {
 
@@ -71,14 +73,6 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
     stack = new ArrayDeque<>();
     returnedNumExprVisitor = new ReturnedNumExprVisitor(stringTable);
     debugVisitor = new DebugVisitor(stringTable);
-  }
-
-  @Override public ScopeTable visit(IdNode v) {
-    v.setScopeTable(stack.getFirst());
-    // IdNode is used only for lookups. For adding to the table, other nodes have to do it
-    stack.getFirst().lookup(v.getId(), stringTable);
-
-    return null;
   }
 
   @Override public ScopeTable visit(ProgramOP v) {
@@ -117,7 +111,7 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
     if (v.getType() != null) {
       for (IdNode id : v.getIdList()) {
         ScopeEntry entry =
-            new ScopeEntry(ScopeKind.VAR, new ScopeType(v.getType(), ParamAccess.IN));
+            new ScopeEntry(ScopeKind.VAR, new ScopeType(v.getType(), ParamAccess.INOUT));
         currentTable.add(id.getId(), entry, stringTable, v);
       }
     } else {
@@ -125,7 +119,7 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
       for (int i = 0; i < size; i++) {
         int id = v.getIdList().get(i).getId();
         Type type = constTypeToType(v.getConstValueList().get(i).constType());
-        ScopeEntry entry = new ScopeEntry(ScopeKind.VAR, new ScopeType(type, ParamAccess.IN));
+        ScopeEntry entry = new ScopeEntry(ScopeKind.VAR, new ScopeType(type, ParamAccess.INOUT));
         currentTable.add(id, entry, stringTable, v);
       }
     }
@@ -320,11 +314,31 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
     v.setScopeTable(stack.getFirst());
     visitNodeList(v.getParams());
 
-    if (v.getScopeTable().lookup(v.getId().getId(), stringTable).getKind() != ScopeKind.PROC) {
+    ScopeEntry procEntry = v.getScopeTable().lookup(v.getId().getId(), stringTable);
+    if (procEntry.getKind() != ScopeKind.PROC) {
       throw new NotAProcScopeException(st(v.getId()), v.accept(debugVisitor));
     }
 
     checkCallFunStats(v.getParams(), v.getId().getId(), v);
+
+    // check that an Expr is not used as an arg to a parameter with REF declaration
+    if (!Utility.isListEmpty(procEntry.getListType1())) {
+      for (int i = 0; i < v.getParams().size(); i++) {
+        ScopeType ithParam = procEntry.getListType1().get(i);
+        Expr ithExpr = v.getParams().get(i);
+        if (ithParam.paramAccess() == ParamAccess.OUT) {
+          if (ithExpr instanceof IdNode idNode) {
+            if (Boolean.FALSE.equals(idNode.isRef())) {
+              throw new MissingRefSymbolScopeException(st(idNode), i + 1, st(v.getId()),
+                  v.accept(debugVisitor));
+            }
+          } else {
+            throw new CanNotRefAnExprScopeException(ithExpr.accept(debugVisitor), i + 1,
+                st(v.getId()), v.accept(debugVisitor));
+          }
+        }
+      }
+    }
 
     return null;
   }
@@ -352,9 +366,10 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
     }
   }
 
-  @Override public ScopeTable visit(IdNodeExpr v) {
+  @Override public ScopeTable visit(IdNode v) {
     v.setScopeTable(stack.getFirst());
-    visitNode(v.getId());
+    // IdNode is used only for lookups. For adding to the table, other nodes have to do it
+    stack.getFirst().lookup(v.getId(), stringTable);
 
     return null;
   }
@@ -370,8 +385,14 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
     v.setScopeTable(stack.getFirst());
 
     visitNodeList(v.getIdNodeList());
-
     visitNodeList(v.getExprList());
+
+    for (IdNode idNode : v.getIdNodeList()) {
+      ScopeEntry entry = v.getScopeTable().lookup(idNode.getId(), stringTable);
+      if (entry.getType().paramAccess() == ParamAccess.IN) {
+        throw new VariableReadOnlyScopeException(st(idNode), v.accept(debugVisitor));
+      }
+    }
 
     int countExprReturned = 0;
     for (Expr expr : v.getExprList()) {

@@ -4,7 +4,6 @@ import java.util.List;
 import main.esercitazione5.StringTable;
 import main.esercitazione5.ast.nodes.BodyOP;
 import main.esercitazione5.ast.nodes.FunOP;
-import main.esercitazione5.ast.nodes.IdNode;
 import main.esercitazione5.ast.nodes.ProcFunParamOP;
 import main.esercitazione5.ast.nodes.ProcOP;
 import main.esercitazione5.ast.nodes.ProgramOP;
@@ -18,7 +17,7 @@ import main.esercitazione5.ast.nodes.expr.EQOP;
 import main.esercitazione5.ast.nodes.expr.FalseConstExpr;
 import main.esercitazione5.ast.nodes.expr.GEOP;
 import main.esercitazione5.ast.nodes.expr.GTOP;
-import main.esercitazione5.ast.nodes.expr.IdNodeExpr;
+import main.esercitazione5.ast.nodes.expr.IdNode;
 import main.esercitazione5.ast.nodes.expr.IntegerConstExpr;
 import main.esercitazione5.ast.nodes.expr.LEOP;
 import main.esercitazione5.ast.nodes.expr.LTOP;
@@ -47,8 +46,6 @@ public abstract class Visitor<T> {
   Visitor(StringTable stringTable) {
     this.stringTable = stringTable;
   }
-
-  public abstract T visit(IdNode v);
 
   public abstract T visit(ProgramOP v);
 
@@ -104,7 +101,7 @@ public abstract class Visitor<T> {
 
   public abstract T visit(CallProcOP v);
 
-  public abstract T visit(IdNodeExpr v);
+  public abstract T visit(IdNode v);
 
   public abstract T visit(ReturnOP v);
 

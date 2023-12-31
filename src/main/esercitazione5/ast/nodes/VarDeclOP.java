@@ -3,6 +3,7 @@ package main.esercitazione5.ast.nodes;
 import java.util.List;
 import main.esercitazione5.ast.ConstValue;
 import main.esercitazione5.ast.Type;
+import main.esercitazione5.ast.nodes.expr.IdNode;
 import main.esercitazione5.visitors.Visitor;
 
 public class VarDeclOP extends Node {

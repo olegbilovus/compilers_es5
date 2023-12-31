@@ -3,6 +3,7 @@ package main.esercitazione5.ast.nodes;
 
 import main.esercitazione5.ast.ParamAccess;
 import main.esercitazione5.ast.Type;
+import main.esercitazione5.ast.nodes.expr.IdNode;
 import main.esercitazione5.visitors.Visitor;
 
 public class ProcFunParamOP extends Node {

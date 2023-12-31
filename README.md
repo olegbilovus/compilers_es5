@@ -31,7 +31,9 @@ Dopo le seguenti modifiche, la grammatica non presenta più alcun conflitto.
 
 - In _Function_ non è permesso avere un _Body_ vuoto. Questo perché Function per definizione ritorna
   una o più espressioni. Nella fase semantica si controllerà che nella lista degli Stat del Body ci
-  sia alla fine una ReturnOP.
+  sia alla fine una ReturnOP. Questo ha un side-effect che costringe di avere sempre un return alla
+  fine quindi in un if-else, il return non potrà stare nell'else ma bisogna metterlo fuori nello
+  scope della funzione Però questo garantisce che il linguaggio target generato non abbia problemi.
 
 - Sono state aggiunte le precedenze alle operazioni delle Expr per risolvere i conflitti.
 
@@ -149,10 +151,19 @@ codice di esempio presente su e-learning.
     - [NumReturnExprIncorrect](src/main/esercitazione5/scope/exceptions/NumReturnExprIncorrectScopeException.java)
       viene utilizzato quando in una funzione il return non ritorna lo stesso numero di valori
       dichiarati nella signature della funzione.
+    - [CanNotRefAnExpr](src/main/esercitazione5/scope/exceptions/CanNotRefAnExprScopeException.java)
+      viene utilizzato quando si passa una Expr come argomento a un parametro _out_ di una
+      procedura.
+    - [MissingRefSymbol](src/main/esercitazione5/scope/exceptions/MissingRefSymbolScopeException.java)
+      viene utilizzato quando si passa un identificatore senza il _@_ come argomento a un parametro
+      _out_ di una procedura.
+    - [VariableReadOnly](src/main/esercitazione5/scope/exceptions/VariableReadOnlyScopeException.java)
+      viene utilizzato quando in una funzione si cerca di fare assignment ai parametri della
+      funzione.
     - [FuncMultReturnVal](src/main/esercitazione5/scope/exceptions/FuncMultReturnValScopeException.java)
       viene utilizzato quando in una chiamata a funzione o procedura si passa come argomento una
       funzione che ritorna più di 1 valore.
-      Lo stesso meccanismo viene utilizzato per controllare che la chiamata a funzione ritorni un 
+      Lo stesso meccanismo viene utilizzato per controllare che la chiamata a funzione ritorni un
       solo valore nelle operazioni binarie e unarie.
 
 ## Programma Math in Toy2

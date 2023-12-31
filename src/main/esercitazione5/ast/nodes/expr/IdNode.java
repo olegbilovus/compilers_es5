@@ -1,26 +1,25 @@
 package main.esercitazione5.ast.nodes.expr;
 
-import main.esercitazione5.ast.nodes.IdNode;
 import main.esercitazione5.visitors.Visitor;
 
-public class IdNodeExpr extends Expr {
+public class IdNode extends Expr {
 
-  private final IdNode id;
+  private final Integer id;
   private final Boolean ref;
 
-  public IdNodeExpr(IdNode id) {
+  public IdNode(Integer id) {
     super();
     this.id = id;
     ref = false;
   }
 
-  public IdNodeExpr(IdNode id, Boolean ref) {
+  public IdNode(Integer id, Boolean ref) {
     super();
     this.id = id;
     this.ref = ref;
   }
 
-  public IdNode getId() {
+  public Integer getId() {
     return id;
   }
 

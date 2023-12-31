@@ -188,9 +188,9 @@ IArgs ::= StringConCat:e IArgs:ee
         | StringConCat:e
           {: RESULT = new ArrayList<Expr>(); RESULT.add(e); :}
         | DOLLARSIGN LPAR ID:i RPAR IArgs:ee
-          {: RESULT = new ArrayList<Expr>(); RESULT.add(new IdNodeExpr(new IdNode(i))); RESULT.addAll(ee); :}
+          {: RESULT = new ArrayList<Expr>(); RESULT.add(new IdNode(i)); RESULT.addAll(ee); :}
         | DOLLARSIGN LPAR ID:i RPAR
-          {: RESULT = new ArrayList<Expr>(); RESULT.add(new IdNodeExpr(new IdNode(i))); :}
+          {: RESULT = new ArrayList<Expr>(); RESULT.add(new IdNode(i)); :}
 ;
 StringConCat ::= StringConCat:eL PLUS StringConCat:eR
                  {: RESULT = new AddOP(eL, eR); :}
@@ -212,9 +212,9 @@ ProcExprs ::= Expr:e COMMA ProcExprs:ee
             | Expr:e
               {: RESULT = new ArrayList<Expr>(); RESULT.add(e); :}
             | REF ID:i COMMA ProcExprs:ee
-              {: RESULT = new ArrayList<Expr>(); RESULT.add(new IdNodeExpr(new IdNode(i), true)); RESULT.addAll(ee); :}
+              {: RESULT = new ArrayList<Expr>(); RESULT.add(new IdNode(i, true)); RESULT.addAll(ee); :}
             | REF ID:i
-              {: RESULT = new ArrayList<Expr>(); RESULT.add(new IdNodeExpr(new IdNode(i), true)); :}
+              {: RESULT = new ArrayList<Expr>(); RESULT.add(new IdNode(i, true)); :}
 ;
           /* [Expr only boolean] */
 IfStat ::= IF Expr:e THEN Body:b Elifs:efs Else:els ENDIF
@@ -270,7 +270,7 @@ Expr ::= FunCall:f
        | STRING_CONST:i
          {: RESULT = new StringConstExpr(new ConstValue(Const.STRING_CONST, String.valueOf(i))); :}
        | ID:i
-         {: RESULT = new IdNodeExpr(new IdNode(i)); :}
+         {: RESULT = new IdNode(i); :}
        | TRUE
          {: RESULT = new TrueConstExpr(new ConstValue(Const.TRUE, null)); :}
        | FALSE

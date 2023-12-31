@@ -3,7 +3,6 @@ package main.esercitazione5.visitors;
 import main.esercitazione5.StringTable;
 import main.esercitazione5.ast.nodes.BodyOP;
 import main.esercitazione5.ast.nodes.FunOP;
-import main.esercitazione5.ast.nodes.IdNode;
 import main.esercitazione5.ast.nodes.ProcFunParamOP;
 import main.esercitazione5.ast.nodes.ProcOP;
 import main.esercitazione5.ast.nodes.ProgramOP;
@@ -18,7 +17,7 @@ import main.esercitazione5.ast.nodes.expr.Expr;
 import main.esercitazione5.ast.nodes.expr.FalseConstExpr;
 import main.esercitazione5.ast.nodes.expr.GEOP;
 import main.esercitazione5.ast.nodes.expr.GTOP;
-import main.esercitazione5.ast.nodes.expr.IdNodeExpr;
+import main.esercitazione5.ast.nodes.expr.IdNode;
 import main.esercitazione5.ast.nodes.expr.IntegerConstExpr;
 import main.esercitazione5.ast.nodes.expr.LEOP;
 import main.esercitazione5.ast.nodes.expr.LTOP;
@@ -46,10 +45,6 @@ public class ReturnedNumExprVisitor extends Visitor<Integer> {
 
   public ReturnedNumExprVisitor(StringTable stringTable) {
     super(stringTable);
-  }
-
-  @Override public Integer visit(IdNode v) {
-    return 1;
   }
 
   @Override public Integer visit(ProgramOP v) {
@@ -160,7 +155,7 @@ public class ReturnedNumExprVisitor extends Visitor<Integer> {
     return 0;
   }
 
-  @Override public Integer visit(IdNodeExpr v) {
+  @Override public Integer visit(IdNode v) {
     return 1;
   }
 

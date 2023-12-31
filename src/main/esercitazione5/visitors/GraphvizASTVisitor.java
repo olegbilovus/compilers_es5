@@ -9,7 +9,6 @@ import main.esercitazione5.ast.ConstValue;
 import main.esercitazione5.ast.Type;
 import main.esercitazione5.ast.nodes.BodyOP;
 import main.esercitazione5.ast.nodes.FunOP;
-import main.esercitazione5.ast.nodes.IdNode;
 import main.esercitazione5.ast.nodes.Node;
 import main.esercitazione5.ast.nodes.ProcFunParamOP;
 import main.esercitazione5.ast.nodes.ProcOP;
@@ -25,7 +24,7 @@ import main.esercitazione5.ast.nodes.expr.Expr;
 import main.esercitazione5.ast.nodes.expr.FalseConstExpr;
 import main.esercitazione5.ast.nodes.expr.GEOP;
 import main.esercitazione5.ast.nodes.expr.GTOP;
-import main.esercitazione5.ast.nodes.expr.IdNodeExpr;
+import main.esercitazione5.ast.nodes.expr.IdNode;
 import main.esercitazione5.ast.nodes.expr.IntegerConstExpr;
 import main.esercitazione5.ast.nodes.expr.LEOP;
 import main.esercitazione5.ast.nodes.expr.LTOP;
@@ -56,10 +55,6 @@ public class GraphvizASTVisitor extends Visitor<String> {
   public GraphvizASTVisitor(StringTable stringTable) {
     super(stringTable);
     stackParent = new ArrayDeque<>();
-  }
-
-  @Override public String visit(IdNode v) {
-    return st(v);
   }
 
   @Override public String visit(ProgramOP v) {
@@ -303,9 +298,9 @@ public class GraphvizASTVisitor extends Visitor<String> {
     return toReturn.toString();
   }
 
-  @Override public String visit(IdNodeExpr v) {
+  @Override public String visit(IdNode v) {
     StringBuilder toReturn = new StringBuilder();
-    toReturn.append(node(IdNodeExpr.class)).append(edge());
+    toReturn.append(node(IdNode.class)).append(edge());
     stackParent.push(nodeCount);
     toReturn.append(node(Boolean.TRUE.equals(v.isRef()) ? "REF" : "NOREF")).append(edge());
     toReturn.append(node(st(v.getId()))).append(edge());

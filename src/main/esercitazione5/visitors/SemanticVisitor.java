@@ -6,7 +6,6 @@ import main.esercitazione5.StringTable;
 import main.esercitazione5.Utility;
 import main.esercitazione5.ast.nodes.BodyOP;
 import main.esercitazione5.ast.nodes.FunOP;
-import main.esercitazione5.ast.nodes.IdNode;
 import main.esercitazione5.ast.nodes.Node;
 import main.esercitazione5.ast.nodes.ProcFunParamOP;
 import main.esercitazione5.ast.nodes.ProcOP;
@@ -21,7 +20,7 @@ import main.esercitazione5.ast.nodes.expr.EQOP;
 import main.esercitazione5.ast.nodes.expr.FalseConstExpr;
 import main.esercitazione5.ast.nodes.expr.GEOP;
 import main.esercitazione5.ast.nodes.expr.GTOP;
-import main.esercitazione5.ast.nodes.expr.IdNodeExpr;
+import main.esercitazione5.ast.nodes.expr.IdNode;
 import main.esercitazione5.ast.nodes.expr.IntegerConstExpr;
 import main.esercitazione5.ast.nodes.expr.LEOP;
 import main.esercitazione5.ast.nodes.expr.LTOP;
@@ -55,10 +54,6 @@ public class SemanticVisitor extends Visitor<Void> {
   public SemanticVisitor(StringTable stringTable) {
     super(stringTable);
     debugVisitor = new DebugVisitor(stringTable);
-  }
-
-  @Override public Void visit(IdNode v) {
-    return null;
   }
 
   @Override public Void visit(ProgramOP v) {
@@ -208,7 +203,7 @@ public class SemanticVisitor extends Visitor<Void> {
     return null;
   }
 
-  @Override public Void visit(IdNodeExpr v) {
+  @Override public Void visit(IdNode v) {
     return null;
   }
 
