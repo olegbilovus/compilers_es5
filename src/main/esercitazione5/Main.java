@@ -13,6 +13,7 @@ import main.esercitazione5.visitors.GraphvizASTVisitor;
 import main.esercitazione5.visitors.GraphvizScopeTablesVisitor;
 import main.esercitazione5.visitors.ScopingVisitor;
 import main.esercitazione5.visitors.SemanticVisitor;
+import main.esercitazione5.visitors.TypeCheckVisitor;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
@@ -22,29 +23,28 @@ import net.sourceforge.argparse4j.inf.Namespace;
 public class Main {
 
   public static void main(String[] args) throws Exception {
-    ArgumentParser parser = ArgumentParsers.newFor("Toy2 To AST").build().description(
-        "Translate a Toy2 source to an AST.");
+    ArgumentParser parser = ArgumentParsers.newFor("Toy2 to stages of a compiler ").build()
+        .description("Translate a Toy2 source to different stages of a compiler.");
     parser.addArgument("-i").type(Arguments.fileType().verifyCanRead())
         .help("Take the input from a file.");
-    parser.addArgument("-o").type(Arguments.fileType().verifyCanCreate())
-        .help("Output to a file.");
+    parser.addArgument("-o").type(Arguments.fileType().verifyCanCreate()).help("Output to a file.");
 
     final String[] availableVisitors =
-        {"graphviz_scope", "scope_check", "semantic_check", "graphviz_ast", "debug"};
+        {"type_check", "graphviz_scope", "scope_check", "semantic_check", "graphviz_ast", "debug"};
 
-    MutuallyExclusiveGroup visitorGroup =
-        parser.addMutuallyExclusiveGroup("Visitor type");
+    MutuallyExclusiveGroup visitorGroup = parser.addMutuallyExclusiveGroup("Visitor type");
     visitorGroup.addArgument("--" + availableVisitors[0]).action(Arguments.storeTrue())
-        .help(
-            "Create a Graphviz Tables diagram in dot language which shows all the scoping tables.");
-    visitorGroup.addArgument("--" + availableVisitors[1]).action(Arguments.storeTrue())
-        .help("Check that there is no scoping errors.");
+        .help("Check that there is no type errors.");
+    visitorGroup.addArgument("--" + availableVisitors[1]).action(Arguments.storeTrue()).help(
+        "Create a Graphviz Tables diagram in dot language which shows all the scoping tables.");
     visitorGroup.addArgument("--" + availableVisitors[2]).action(Arguments.storeTrue())
-        .help("Check that there is no semantic errors.");
+        .help("Check that there is no scoping errors.");
     visitorGroup.addArgument("--" + availableVisitors[3]).action(Arguments.storeTrue())
-        .help("Create a Graphviz AST diagram in dot language.");
+        .help("Check that there is no semantic errors.");
     visitorGroup.addArgument("--" + availableVisitors[4]).action(Arguments.storeTrue())
-        .help("(default) Debug the Lexer and Parser. The input will run on both "
+        .help("Create a Graphviz AST diagram in dot language.");
+    visitorGroup.addArgument("--" + availableVisitors[5]).action(Arguments.storeTrue()).help(
+        "(default) Debug the Lexer and Parser. The input will run on both "
             + "and produce the equivalent of source in Toy2.");
 
     Namespace ns = parser.parseArgsOrFail(args);
@@ -53,8 +53,8 @@ public class Main {
     Reader reader;
 
     if (fileInput == null) {
-      System.out.println("Paste the Toy2 source, hit Return, then Cmd-D (in MacOs) "
-          + "or Ctrl-Z (in Windows)");
+      System.out.println(
+          "Paste the Toy2 source, hit Return, then Cmd-D (in MacOs) " + "or Ctrl-Z (in Windows)");
       InputStreamReader inp = new InputStreamReader(System.in);
       reader = new BufferedReader(inp);
     } else {
@@ -77,16 +77,21 @@ public class Main {
     if (chosenVisitor[0]) {
       ast.accept(new SemanticVisitor(st));
       ast.accept(new ScopingVisitor(st));
-      visitorRes = ast.accept(new GraphvizScopeTablesVisitor(st));
+      ast.accept(new TypeCheckVisitor(st));
+      visitorRes = TypeCheckVisitor.SUCCESS;
     } else if (chosenVisitor[1]) {
+      ast.accept(new SemanticVisitor(st));
+      ast.accept(new ScopingVisitor(st));
+      visitorRes = ast.accept(new GraphvizScopeTablesVisitor(st));
+    } else if (chosenVisitor[2]) {
       ast.accept(new SemanticVisitor(st));
       ast.accept(new ScopingVisitor(st));
       visitorRes = ScopingVisitor.SUCCESS;
 
-    } else if (chosenVisitor[2]) {
+    } else if (chosenVisitor[3]) {
       ast.accept(new SemanticVisitor(st));
       visitorRes = SemanticVisitor.SUCCESS;
-    } else if (chosenVisitor[3]) {
+    } else if (chosenVisitor[4]) {
       visitorRes = ast.accept(new GraphvizASTVisitor(st));
     } else {
       visitorRes = ast.accept(new DebugVisitor(st));
@@ -99,14 +104,12 @@ public class Main {
     } else {
       try (FileWriter fileWriter = new FileWriter(fileOutput)) {
         fileWriter.write(visitorRes);
-        if (chosenVisitor[0] || chosenVisitor[3]) {
+        if (chosenVisitor[1] || chosenVisitor[4]) {
           System.out.println(
               "dot -Tsvg \"" + fileOutput.getAbsolutePath() + "\" -o " + fileOutput.getName()
                   .split("\\.")[0] + ".svg");
         }
       }
     }
-
-
   }
 }

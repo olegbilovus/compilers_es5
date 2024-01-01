@@ -113,6 +113,7 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
         ScopeEntry entry =
             new ScopeEntry(ScopeKind.VAR, new ScopeType(v.getType(), ParamAccess.INOUT));
         currentTable.add(id.getId(), entry, stringTable, v);
+        id.setScopeTable(currentTable);
       }
     } else {
       int size = v.getIdList().size();
@@ -121,6 +122,7 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
         Type type = constTypeToType(v.getConstValueList().get(i).constType());
         ScopeEntry entry = new ScopeEntry(ScopeKind.VAR, new ScopeType(type, ParamAccess.INOUT));
         currentTable.add(id, entry, stringTable, v);
+        v.getIdList().get(i).setScopeTable(currentTable);
       }
     }
 
@@ -173,6 +175,7 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
 
   @Override public ScopeTable visit(ProcFunParamOP v) {
     v.setScopeTable(stack.getFirst());
+    v.getId().setScopeTable(v.getScopeTable());
     stack.getFirst().add(v.getId().getId(),
         new ScopeEntry(ScopeKind.VAR, new ScopeType(v.getType(), v.getParamAccess())), stringTable,
         v);

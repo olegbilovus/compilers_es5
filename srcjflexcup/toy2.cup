@@ -39,8 +39,8 @@ nonterminal ElseOP Else;
 nonterminal List<ElifOP> Elifs;
 
 terminal UMINUS;
-precedence left NOT;
 precedence left AND, OR;
+precedence left NOT;
 precedence left GT, GE, LT, LE, EQ, NE;
 precedence left PLUS, MINUS;
 precedence left TIMES, DIV;

@@ -9,7 +9,7 @@ proc main(v: string, n: integer):
   b, s ^= f(4+5, a>=b);
   p(@b, s);
 
-  --> "Input is " $(i+1) "\nThanks";
+  --> "Input is " $(i+s) "\nThanks";
   -->! "Hello" + "World" + "!!";
   <-- "Enter input:" + "\n" $(i) "Done";
 

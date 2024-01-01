@@ -1,13 +1,12 @@
 package main.esercitazione5;
 
 import java.io.StringReader;
-import java.util.Scanner;
 import main.esercitazione5.ast.nodes.ProgramOP;
-import main.esercitazione5.visitors.GraphvizScopeTablesVisitor;
 import main.esercitazione5.visitors.ScopingVisitor;
 import main.esercitazione5.visitors.SemanticVisitor;
+import main.esercitazione5.visitors.TypeCheckVisitor;
 
-public class ScopingTester {
+public class TypeCheckTester {
 
   public static void main(String[] args) throws Exception {
     StringReader in = Utility.readFile(args[0], args[1]);
@@ -16,21 +15,10 @@ public class ScopingTester {
 
     ProgramOP ast = (ProgramOP) p.parse().value;
 
-    Scanner s = new Scanner(System.in);
-    System.out.println("""
-        Select the Visitor:
-        1. ScopingVisitor
-        2. GraphvizScopeTablesVisitor
-        """);
-    int c = s.nextInt();
-
     ast.accept(new SemanticVisitor(lexer.getStringTable()));
     ast.accept(new ScopingVisitor(lexer.getStringTable()));
+    ast.accept(new TypeCheckVisitor(lexer.getStringTable()));
 
-    System.out.println(ScopingVisitor.SUCCESS + "\n");
-
-    if (c == 2) {
-      System.out.println(ast.accept(new GraphvizScopeTablesVisitor(lexer.getStringTable())));
-    }
+    System.out.println(TypeCheckVisitor.SUCCESS + "\n");
   }
 }

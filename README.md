@@ -118,6 +118,14 @@ codice di esempio presente su e-learning.
 
 ![AST_input1.png](src/main/esercitazione5/images/Scope_input1.png)
 
+### TypeCheck
+
+Nel Run di [TypeCheckTester](src/main/esercitazione5/TypeCheckTester.java) verrà usato il seguente
+visitor.
+
+**TypeCheckVisitor**: dopo aver fatto il parsing del source, controllo semantico e generazione delle
+tabelle di scope, controlla che i Type siano rispettati.
+
 ## Gestione errori
 
 - In caso ci sia un errore del **Lexer** si continua l'analisi emettendo un token _\<error\>_.
@@ -128,7 +136,7 @@ codice di esempio presente su e-learning.
     - [MissingMainProc](src/main/esercitazione5/semantic/exceptions/MissingMainProcSemanticException.java)
     - [MissingReturnInFunc](src/main/esercitazione5/semantic/exceptions/MissingReturnInFuncSemanticException.java)
     - [NumIdsNumConstsDiff](src/main/esercitazione5/semantic/exceptions/NumIdsNumConstsDiffSemanticException.java)
-      viene utilizzato quando in una initialization il numero di variabili è diverso dal numero di
+      quando in una initialization il numero di variabili è diverso dal numero di
       costanti.
     - [ReturnInProc](src/main/esercitazione5/semantic/exceptions/ReturnInProcSemanticException.java)
 - Nel caso ci sia un errore nello **Scoping**, viene segnalato nella console su quale simbolo è
@@ -143,28 +151,42 @@ codice di esempio presente su e-learning.
       utilizzato quando si cerca di fare chiamata a procedura di un identificatore che in quel
       scope non è una procedura.
     - [NumAssignExprIncorrect](src/main/esercitazione5/scope/exceptions/NumAssignExprIncorrectScopeException.java)
-      viene utilizzato quando il numero di Expr è diverso dal numero di variabili in
+      quando il numero di Expr è diverso dal numero di variabili in
       un'assegnamento.
     - [NumArgsExprIncorrect](src/main/esercitazione5/scope/exceptions/NumArgsExprIncorrectScopeException.java)
-      viene utilizzato quando si passa un numero errato di argomenti alla chiamata di una funzione
+      quando si passa un numero errato di argomenti alla chiamata di una funzione
       o procedura.
     - [NumReturnExprIncorrect](src/main/esercitazione5/scope/exceptions/NumReturnExprIncorrectScopeException.java)
-      viene utilizzato quando in una funzione il return non ritorna lo stesso numero di valori
+      quando in una funzione il return non ritorna lo stesso numero di valori
       dichiarati nella signature della funzione.
     - [CanNotRefAnExpr](src/main/esercitazione5/scope/exceptions/CanNotRefAnExprScopeException.java)
-      viene utilizzato quando si passa una Expr come argomento a un parametro _out_ di una
+      quando si passa una Expr come argomento a un parametro _out_ di una
       procedura.
     - [MissingRefSymbol](src/main/esercitazione5/scope/exceptions/MissingRefSymbolScopeException.java)
-      viene utilizzato quando si passa un identificatore senza il _@_ come argomento a un parametro
+      quando si passa un identificatore senza il _@_ come argomento a un parametro
       _out_ di una procedura.
     - [VariableReadOnly](src/main/esercitazione5/scope/exceptions/VariableReadOnlyScopeException.java)
-      viene utilizzato quando in una funzione si cerca di fare assignment ai parametri della
+      quando in una funzione si cerca di fare assignment ai parametri della
       funzione.
     - [FuncMultReturnVal](src/main/esercitazione5/scope/exceptions/FuncMultReturnValScopeException.java)
-      viene utilizzato quando in una chiamata a funzione o procedura si passa come argomento una
+      quando in una chiamata a funzione o procedura si passa come argomento una
       funzione che ritorna più di 1 valore.
-      Lo stesso meccanismo viene utilizzato per controllare che la chiamata a funzione ritorni un
+      Lo stesso meccanismo per controllare che la chiamata a funzione ritorni un
       solo valore nelle operazioni binarie e unarie.
+- Nel caso ci sia un errore di **Type**, viene segnalato nella console su quale simbolo è
+  l'errore e quale è il source code che lo compone.
+  Gli errori di Type considerati sono:
+    - [Arithmetic](src/main/esercitazione5/typecheck/exceptions/ArithmeticTypeCheckException.java)
+      quando di usano dei Type non compatibili con le operazioni aritmetiche definite nella
+      semantica.
+    - [UMinus](src/main/esercitazione5/typecheck/exceptions/UMinusTypeCheckException.java) quando
+      si cerca di applicare l'operatore a type non integer o real.
+    - [Compare](src/main/esercitazione5/typecheck/exceptions/CompareTypeCheckException.java) quando
+      si usano dei Type non compatibili con gli operatori di comparazione.
+    - [Logic](src/main/esercitazione5/typecheck/exceptions/LogicTypeCheckException.java) quando
+      si cerca di mettere in AND o in OR Type che non sono boolean.
+    - [Not](src/main/esercitazione5/typecheck/exceptions/NotTypeCheckException.java) quando si
+      cerca di fare il not di un Type non boolean.
 
 ## Programma Math in Toy2
 

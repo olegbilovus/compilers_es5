@@ -2,6 +2,7 @@ package test.java.parser;
 
 import main.esercitazione5.ast.nodes.ProgramOP;
 import main.esercitazione5.ast.nodes.expr.AddOP;
+import main.esercitazione5.ast.nodes.expr.AndOP;
 import main.esercitazione5.ast.nodes.expr.DiffOP;
 import main.esercitazione5.ast.nodes.expr.DivOP;
 import main.esercitazione5.ast.nodes.expr.GTOP;
@@ -76,6 +77,18 @@ public class ArithmeticTest {
     Assertions.assertInstanceOf(NotOP.class,
         assignOP.getExprList().get(0));
     Assertions.assertInstanceOf(GTOP.class,
+        assignOP.getExprList().get(0).getExprLeft());
+
+    assignOP = init("func f() -> real: a ^= !(2 > 4 && true); endfunc proc main(): endproc");
+    Assertions.assertInstanceOf(NotOP.class,
+        assignOP.getExprList().get(0));
+    Assertions.assertInstanceOf(AndOP.class,
+        assignOP.getExprList().get(0).getExprLeft());
+
+    assignOP = init("func f() -> real: a ^= !2 > 4 && true; endfunc proc main(): endproc");
+    Assertions.assertInstanceOf(AndOP.class,
+        assignOP.getExprList().get(0));
+    Assertions.assertInstanceOf(NotOP.class,
         assignOP.getExprList().get(0).getExprLeft());
   }
 }
