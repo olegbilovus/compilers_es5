@@ -42,12 +42,17 @@ import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
+import main.esercitazione5.ast.nodes.stat.Stat;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
+import main.esercitazione5.scope.ScopeEntry;
+import main.esercitazione5.scope.ScopeType;
 import main.esercitazione5.typecheck.exceptions.ArithmeticTypeCheckException;
 import main.esercitazione5.typecheck.exceptions.CompareTypeCheckException;
+import main.esercitazione5.typecheck.exceptions.ConditionNotABooleanTypeCheckException;
 import main.esercitazione5.typecheck.exceptions.LogicTypeCheckException;
 import main.esercitazione5.typecheck.exceptions.NotTypeCheckException;
+import main.esercitazione5.typecheck.exceptions.TypeArgsExprIncorrectTypeCheckException;
 import main.esercitazione5.typecheck.exceptions.UMinusTypeCheckException;
 
 public class TypeCheckVisitor extends Visitor<List<Type>> {
@@ -70,11 +75,7 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
 
   @Override public List<Type> visit(VarDeclOP v) {
     List<Type> typeList;
-    if (v.getType() != null) {
-      typeList = List.of(v.getType());
-    } else {
-      typeList = nodeTypeList(v.getIdList());
-    }
+    typeList = nodeTypeList(v.getIdList());
 
     // this is set because it makes easier to write the generator of the target language later
     v.setTypeList(typeList);
@@ -83,18 +84,30 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
   }
 
   @Override public List<Type> visit(FunOP v) {
+    visitNodeList(v.getProcFunParamOPList());
     visitNode(v.getBodyOP());
+
+    // check that the ReturnOPs return the same Type of Expr as in the FunOp signature
+    for (Stat stat : v.getBodyOP().getStatList()) {
+      if (stat instanceof ReturnOP returnOP) {
+        checkSameTypeExprList(v.getReturnTypes(), returnOP.getTypeList(),
+            st(v.getId()), returnOP);
+      }
+    }
 
     return Collections.emptyList();
   }
 
   @Override public List<Type> visit(ProcOP v) {
+    visitNodeList(v.getProcFunParamOPList());
     visitNode(v.getBodyOP());
 
     return Collections.emptyList();
   }
 
   @Override public List<Type> visit(ProcFunParamOP v) {
+    v.getId().setTypeList(List.of(v.getType()));
+    v.setTypeList(List.of(v.getType()));
     return Collections.emptyList();
   }
 
@@ -290,42 +303,67 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
   }
 
   @Override public List<Type> visit(IntegerConstExpr v) {
+    v.setTypeList(List.of(Type.INTEGER));
     return List.of(Type.INTEGER);
   }
 
   @Override public List<Type> visit(RealConstExpr v) {
+    v.setTypeList(List.of(Type.REAL));
     return List.of(Type.REAL);
   }
 
   @Override public List<Type> visit(StringConstExpr v) {
+    v.setTypeList(List.of(Type.STRING));
     return List.of(Type.STRING);
   }
 
   @Override public List<Type> visit(TrueConstExpr v) {
+    v.setTypeList(List.of(Type.BOOLEAN));
     return List.of(Type.BOOLEAN);
   }
 
   @Override public List<Type> visit(FalseConstExpr v) {
+    v.setTypeList(List.of(Type.BOOLEAN));
     return List.of(Type.BOOLEAN);
   }
 
   @Override public List<Type> visit(CallFunOP v) {
     List<Type> typeListExpr = nodeTypeList(v.getExprList());
+    ScopeEntry fun = v.getScopeTable().lookup(v.getId().getId(), stringTable);
+    List<Type> typeListFun = fun.getListType1().stream().map(ScopeType::type).toList();
 
-    // TODO: check args type are same of the declared in the function
-    List<Type> typeList = v.getScopeTable().lookup(v.getId().getId(), stringTable).getListType2();
-    v.setTypeList(typeList);
+    checkSameTypeExprList(typeListFun, typeListExpr, st(v.getId()), v);
 
-    return typeList;
+    // this node returns the Fun's return type, not the parameters
+    v.setTypeList(fun.getListType2());
+
+    return v.getTypeList();
   }
 
   @Override public List<Type> visit(CallProcOP v) {
     List<Type> typeListExpr = nodeTypeList(v.getParams());
-    // TODO: check args type are same of the declared in the procedure
+    List<Type> typeListProc =
+        v.getScopeTable().lookup(v.getId().getId(), stringTable).getListType1().stream()
+            .map(ScopeType::type).toList();
 
-    List<Type> typeList = v.getScopeTable().lookup(v.getId().getId(), stringTable).getListType2();
+    checkSameTypeExprList(typeListProc, typeListExpr, st(v.getId()), v);
 
+    // proc has not a return
     return Collections.emptyList();
+  }
+
+  private void checkSameTypeExprList(List<Type> expectedTypes, List<Type> givenTypes, String where,
+      Node v) {
+    if (!Utility.isListEmpty(expectedTypes)) {
+      for (int i = 0; i < expectedTypes.size(); i++) {
+        Type expected = expectedTypes.get(i);
+        Type given = givenTypes.get(i);
+        if (expected != given) {
+          throw new TypeArgsExprIncorrectTypeCheckException(v.accept(debugVisitor), where, i + 1,
+              expected, given);
+        }
+      }
+    }
   }
 
   @Override public List<Type> visit(IdNode v) {
@@ -340,14 +378,14 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
     List<Type> typeList = nodeTypeList(v.getExprList());
     v.setTypeList(typeList);
 
-    // TODO: check returned values type are same of the declared in the function
-
     return typeList;
   }
 
   @Override public List<Type> visit(AssignOP v) {
-    List<Type> typeList = nodeTypeList(v.getExprList());
-    // TODO: check expr_i has same type as id_i
+    List<Type> typeListIDs = nodeTypeList(v.getIdNodeList());
+    List<Type> typeListExpr = nodeTypeList(v.getExprList());
+
+    checkSameTypeExprList(typeListIDs, typeListExpr, AssignOP.class.getSimpleName(), v);
 
     return Collections.emptyList();
   }
@@ -369,7 +407,11 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
   }
 
   @Override public List<Type> visit(WhileOP v) {
-    // TODO: check condition is a Boolean Type Expr
+    Type conditionType = nodeType(v.getCondition()).get(0);
+    if (conditionType != Type.BOOLEAN) {
+      throw new ConditionNotABooleanTypeCheckException(conditionType, WhileOP.class,
+          v.accept(debugVisitor));
+    }
 
     visitNode(v.getBody());
 
@@ -377,7 +419,11 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
   }
 
   @Override public List<Type> visit(IfOP v) {
-    // TODO: check condition is a Boolean Type Expr
+    Type conditionType = nodeType(v.getCondition()).get(0);
+    if (conditionType != Type.BOOLEAN) {
+      throw new ConditionNotABooleanTypeCheckException(conditionType, IfOP.class,
+          v.accept(debugVisitor));
+    }
 
     visitNode(v.getBody());
     visitNodeList(v.getElifOPList());
@@ -387,7 +433,11 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
   }
 
   @Override public List<Type> visit(ElifOP v) {
-    // TODO: check condition is a Boolean Type Expr
+    Type conditionType = nodeType(v.getCondition()).get(0);
+    if (conditionType != Type.BOOLEAN) {
+      throw new ConditionNotABooleanTypeCheckException(conditionType, ElifOP.class,
+          v.accept(debugVisitor));
+    }
 
     visitNode(v.getBody());
 

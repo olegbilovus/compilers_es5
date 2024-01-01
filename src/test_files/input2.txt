@@ -6,8 +6,8 @@ c, b: boolean;\
 proc main(v: string, n: integer):
   var b: real; s, i : string;\
   s ^= "hello" + "world";
-  b, s ^= f(4+5, a>=b);
-  p(@b, s);
+  b, c ^= f(4+5, "abc");
+  p(@a, c);
 
   --> "Input is " $(i+s) "\nThanks";
   -->! "Hello" + "World" + "!!";
@@ -15,7 +15,7 @@ proc main(v: string, n: integer):
 
   while true do
     var aaa: real;\
-    b ^= a + 4;
+    b ^= a + 4.0;
   endwhile;
 endproc
 
@@ -25,9 +25,9 @@ proc p(out a: integer, b: boolean):
 
   if b then
     a ^= (4 + 5) * 7;
-    c ^= a > 5;
+    c ^= a + 5;
   elseif !r then
-    sxy ^= 4;
+    sxy ^= 4.4;
     a ^= 7 * -4;
     var sxy: real;\
   else
@@ -36,12 +36,13 @@ proc p(out a: integer, b: boolean):
   endif;
 
   while a <= 10 do
-    r, a ^= f();
+    var cc: real;\
+    cc, r ^= f(1, "");
     a ^= a + 1;
     var v: integer;\
     v ^= 4 + a;
     while true do
-      b ^= 4;
+      b ^= 4 = 4;
       var a: real;\
     endwhile;
   endwhile;
@@ -50,12 +51,12 @@ endproc
 var d, e ^= 3.4, "hello";\
 
 func f(a: integer, b: string) -> real, boolean:
-  c ^= b;
+  c ^= true;
   if true then
     var a: real;\
     a ^= 4.4;
   endif;
-  return a, true;
+  return a+1.0, true;
 endfunc
 
 func bol() -> boolean:

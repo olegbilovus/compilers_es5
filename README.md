@@ -184,9 +184,13 @@ tabelle di scope, controlla che i Type siano rispettati.
     - [Compare](src/main/esercitazione5/typecheck/exceptions/CompareTypeCheckException.java) quando
       si usano dei Type non compatibili con gli operatori di comparazione.
     - [Logic](src/main/esercitazione5/typecheck/exceptions/LogicTypeCheckException.java) quando
-      si cerca di mettere in AND o in OR Type che non sono boolean.
+      si cerca di mettere in AND o in OR Type che non sono Boolean.
     - [Not](src/main/esercitazione5/typecheck/exceptions/NotTypeCheckException.java) quando si
-      cerca di fare il not di un Type non boolean.
+      cerca di fare il not di un Type non Boolean.
+    - [ConditionNotABoolean](src/main/esercitazione5/typecheck/exceptions/ConditionNotABooleanTypeCheckException.java)
+      quando si passa un Expr che non ha valore Boolean dove ci si aspetta un Boolean.
+    - [TypeArgsExprIncorrect](src/main/esercitazione5/typecheck/exceptions/TypeArgsExprIncorrectTypeCheckException.java)
+      quando una delle Expr passate non ha in Type atteso.
 
 ## Programma Math in Toy2
 

@@ -347,6 +347,9 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
   }
 
   private void checkCallFunStats(List<Expr> exprList, int id, Node v) {
+    List<ScopeType> params = v.getScopeTable().lookup(id, stringTable).getListType1();
+    int expected = Utility.isListEmpty(params) ? 0 : params.size();
+
     if (!Utility.isListEmpty(exprList)) {
       int numExpr = 0;
       for (Expr expr : exprList) {
@@ -359,13 +362,13 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
         }
         numExpr += expr.accept(returnedNumExprVisitor);
       }
-
-      List<ScopeType> params = v.getScopeTable().lookup(id, stringTable).getListType1();
-      int expected = Utility.isListEmpty(params) ? 0 : params.size();
       if (expected != numExpr) {
         throw new NumArgsExprIncorrectScopeException(v.accept(debugVisitor), st(id), expected,
             numExpr);
       }
+    } else if (expected != 0) {
+      throw new NumArgsExprIncorrectScopeException(v.accept(debugVisitor), st(id), expected,
+          0);
     }
   }
 
