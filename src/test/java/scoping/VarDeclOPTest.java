@@ -8,7 +8,6 @@ import main.esercitazione5.scope.ScopeKind;
 import main.esercitazione5.scope.ScopeTable;
 import main.esercitazione5.scope.ScopeType;
 import main.esercitazione5.scope.exceptions.AlreadyDeclaredScopeException;
-import main.esercitazione5.scope.exceptions.IdUsedBeforeDeclScopeException;
 import main.esercitazione5.semantic.exceptions.NumIdsNumConstsDiffSemanticException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,8 @@ public class VarDeclOPTest {
     return ScopingUtility.astScoped(sourceStr).getScopeTable();
   }
 
-  @Test public void valid() throws Exception {
+  @Test
+  public void valid() throws Exception {
     ScopeTable scopeTable = init("var a: boolean;\\ proc main(): endproc");
     Assertions.assertEquals(2, scopeTable.getTable().size());
     ScopeEntry entry = scopeTable.lookup(1, null);
@@ -50,11 +50,12 @@ public class VarDeclOPTest {
     Assertions.assertEquals(ParamAccess.INOUT, scopeType.paramAccess());
     Assertions.assertTrue(Utility.isListEmpty(entry.getListType2()));
 
-    // declare a later but it is global
-    Assertions.assertDoesNotThrow(() -> init("proc main(): a ^= 4.4; endproc var a: real;\\"));
+    // first use and later init same scope
+    Assertions.assertDoesNotThrow(() -> init("proc main(): a ^= 4; var a: integer;\\ endproc"));
   }
 
-  @Test public void invalid() {
+  @Test
+  public void invalid() {
 
     // number of IDs different from number of Constants
     Assertions.assertThrows(NumIdsNumConstsDiffSemanticException.class,
@@ -63,9 +64,5 @@ public class VarDeclOPTest {
     // redefine the variable
     Assertions.assertThrows(AlreadyDeclaredScopeException.class,
         () -> init("var a ^= 4; a: boolean;\\ proc main(): endproc"));
-
-    // a declared later and it is not global
-    Assertions.assertThrows(IdUsedBeforeDeclScopeException.class,
-        () -> init("proc main(): a ^= 4; var a: integer;\\ endproc"));
   }
 }

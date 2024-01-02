@@ -1,6 +1,19 @@
+var a ^= 3;\
+var c ^= 3.4;\
+% this is a comment %
+var e ^= "hello";\
+
 proc main():
-  var a: real;\
-  a ^= 4.4 + c;
+% this is
+  a multiple
+  lines
+  comment
+%
+  var b: real;\
 endproc
 
-var c: integer;\ %declared later but it is global%
+var s ^= "multiple
+  lines
+  string";
+s2 ^= "string";
+s3^= "hello";\

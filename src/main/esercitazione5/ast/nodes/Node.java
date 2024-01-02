@@ -7,18 +7,6 @@ import main.esercitazione5.visitors.Visitor;
 
 public abstract class Node {
 
-  private static int nodeCount = 0;
-
-  private final int thisNodeCount;
-
-  protected Node() {
-    thisNodeCount = ++nodeCount;
-  }
-
-  public int getThisNodeCount() {
-    return thisNodeCount;
-  }
-
   private ScopeTable scopeTable;
 
   private List<Type> typeList;
