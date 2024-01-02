@@ -144,6 +144,9 @@ tabelle di scope, controlla che i Type siano rispettati.
   Gli errori di Scoping considerati sono:
     - [AlreadyDeclared](src/main/esercitazione5/scope/exceptions/AlreadyDeclaredScopeException.java)
     - [Undeclared](src/main/esercitazione5/scope/exceptions/UndeclaredScopeException.java)
+    - [IdUsedBeforeDecl](src/main/esercitazione5/scope/exceptions/IdUsedBeforeDeclScopeException.java)
+      a differenza di Undeclared, qui l'id è stato dichiarato nello scope ma è stato dichiarato dopo
+      l'uso.
     - [NotAFunc](src/main/esercitazione5/scope/exceptions/NotAFuncScopeException.java) viene
       utilizzato quando si cerca di fare chiamata a funzione di un identificatore che in quel
       scope non è una funzione.

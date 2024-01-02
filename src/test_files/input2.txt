@@ -27,9 +27,9 @@ proc p(out a: integer, b: boolean):
     a ^= (4 + 5) * 7;
     c ^= a + 5;
   elseif !r then
+    var sxy: real;\
     sxy ^= 4.4;
     a ^= 7 * -4;
-    var sxy: real;\
   else
     var a: boolean;\
     a ^= true;

@@ -54,6 +54,7 @@ import main.esercitazione5.scope.ScopeTable;
 import main.esercitazione5.scope.ScopeType;
 import main.esercitazione5.scope.exceptions.CanNotRefAnExprScopeException;
 import main.esercitazione5.scope.exceptions.FuncMultReturnValScopeException;
+import main.esercitazione5.scope.exceptions.IdUsedBeforeDeclScopeException;
 import main.esercitazione5.scope.exceptions.MissingRefSymbolScopeException;
 import main.esercitazione5.scope.exceptions.NotAFuncScopeException;
 import main.esercitazione5.scope.exceptions.NotAProcScopeException;
@@ -111,7 +112,11 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
     if (v.getType() != null) {
       for (IdNode id : v.getIdList()) {
         ScopeEntry entry =
-            new ScopeEntry(ScopeKind.VAR, new ScopeType(v.getType(), ParamAccess.INOUT));
+            new ScopeEntry(ScopeKind.VAR, new ScopeType(v.getType(), ParamAccess.INOUT),
+                id.getThisNodeCount());
+        if (stack.size() == 1) { // global table
+          entry.setGlobal(true);
+        }
         currentTable.add(id.getId(), entry, stringTable, v);
         id.setScopeTable(currentTable);
       }
@@ -120,7 +125,11 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
       for (int i = 0; i < size; i++) {
         int id = v.getIdList().get(i).getId();
         Type type = constTypeToType(v.getConstValueList().get(i).constType());
-        ScopeEntry entry = new ScopeEntry(ScopeKind.VAR, new ScopeType(type, ParamAccess.INOUT));
+        ScopeEntry entry = new ScopeEntry(ScopeKind.VAR, new ScopeType(type, ParamAccess.INOUT),
+            v.getIdList().get(i).getThisNodeCount());
+        if (stack.size() == 1) { // global table
+          entry.setGlobal(true);
+        }
         currentTable.add(id, entry, stringTable, v);
         v.getIdList().get(i).setScopeTable(currentTable);
       }
@@ -168,7 +177,8 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
         scopeTypesParam.add(new ScopeType(paramOP.getType(), paramOP.getParamAccess()));
       }
     }
-    ScopeEntry scopeEntry = new ScopeEntry(scopeKind, scopeTypesParam, typeList);
+    ScopeEntry scopeEntry =
+        new ScopeEntry(scopeKind, scopeTypesParam, typeList, node.getThisNodeCount());
     scopeTable.add(id.getId(), scopeEntry, stringTable, node);
 
   }
@@ -177,8 +187,8 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
     v.setScopeTable(stack.getFirst());
     v.getId().setScopeTable(v.getScopeTable());
     stack.getFirst().add(v.getId().getId(),
-        new ScopeEntry(ScopeKind.VAR, new ScopeType(v.getType(), v.getParamAccess())), stringTable,
-        v);
+        new ScopeEntry(ScopeKind.VAR, new ScopeType(v.getType(), v.getParamAccess()),
+            v.getThisNodeCount()), stringTable, v);
 
     return null;
   }
@@ -367,16 +377,19 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
             numExpr);
       }
     } else if (expected != 0) {
-      throw new NumArgsExprIncorrectScopeException(v.accept(debugVisitor), st(id), expected,
-          0);
+      throw new NumArgsExprIncorrectScopeException(v.accept(debugVisitor), st(id), expected, 0);
     }
   }
 
   @Override public ScopeTable visit(IdNode v) {
     v.setScopeTable(stack.getFirst());
     // IdNode is used only for lookups. For adding to the table, other nodes have to do it
-    stack.getFirst().lookup(v.getId(), stringTable);
+    ScopeEntry scopeEntry = stack.getFirst().lookup(v.getId(), stringTable);
 
+    if (scopeEntry.getKind() == ScopeKind.VAR && !scopeEntry.isGlobal()
+        && scopeEntry.getNodeCount() > v.getThisNodeCount()) {
+      throw new IdUsedBeforeDeclScopeException(st(v.getId()));
+    }
     return null;
   }
 
