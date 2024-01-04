@@ -75,7 +75,11 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
 
   @Override public List<Type> visit(VarDeclOP v) {
     List<Type> typeList;
-    typeList = nodeTypeList(v.getIdList());
+    if (v.getType() != null) {
+      typeList = List.of(v.getType());
+    } else {
+      typeList = nodeTypeList(v.getIdList());
+    }
 
     // this is set because it makes easier to write the generator of the target language later
     v.setTypeList(typeList);
@@ -90,8 +94,7 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
     // check that the ReturnOPs return the same Type of Expr as in the FunOp signature
     for (Stat stat : v.getBodyOP().getStatList()) {
       if (stat instanceof ReturnOP returnOP) {
-        checkSameTypeExprList(v.getReturnTypes(), returnOP.getTypeList(),
-            st(v.getId()), returnOP);
+        checkSameTypeExprList(v.getReturnTypes(), returnOP.getTypeList(), st(v.getId()), returnOP);
       }
     }
 
@@ -101,6 +104,8 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
   @Override public List<Type> visit(ProcOP v) {
     visitNodeList(v.getProcFunParamOPList());
     visitNode(v.getBodyOP());
+
+
 
     return Collections.emptyList();
   }

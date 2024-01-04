@@ -1229,7 +1229,9 @@ public class Yylex implements java_cup.runtime.Scanner {
           // fall through
           case 79: break;
           case 23:
-            { stringBuff.append( yytext() );
+            { stringBuff.append( yytext().replace("\n", "\\n")
+                                                                .replace("\r", "\\r")
+                                                                .replace("\t", "\\t") );
             }
           // fall through
           case 80: break;

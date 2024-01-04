@@ -118,7 +118,9 @@ Digits = {Digit}+
                                    return installID(sym.STRING_CONST,
                                      stringBuff.toString()); }
   <<EOF>>                        { return symbol(sym.error, "Constant String not completed"); }
-  [^\"]+                         { stringBuff.append( yytext() ); }
+  [^\"]+                         { stringBuff.append( yytext().replace("\n", "\\n")
+                                                                .replace("\r", "\\r")
+                                                                .replace("\t", "\\t") ); }
 }
 
 <COMMENT> {
