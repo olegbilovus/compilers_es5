@@ -24,6 +24,9 @@ public class StringTableTest {
       Assertions.assertEquals(i + 1, lexer.getStringTable().get(strSourceSplit[i]));
       Assertions.assertEquals(strSourceSplit[i], lexer.getStringTable().get(i + 1));
     }
+
+    lexer.getStringTable().replace(1, "111");
+    Assertions.assertEquals("111", lexer.getStringTable().get(1));
   }
 
   @Test

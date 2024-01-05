@@ -65,11 +65,13 @@ public class GenCVisitor extends Visitor<String> {
     // prototypes
     toReturn.append("// PROTOTYPES\n");
     for (ProcOP procOP : v.getProcOPList()) {
+      changeStringKeywordC(procOP.getId());
       genPrototype(toReturn, null, procOP.getId(), procOP.getProcFunParamOPList());
       toReturn.append("\n");
     }
 
     for (FunOP funOP : v.getFunOPList()) {
+      changeStringKeywordC(funOP.getId());
       genPrototype(toReturn, funOP.getReturnTypes(), funOP.getId(), funOP.getProcFunParamOPList());
       toReturn.append("\n");
     }
@@ -107,6 +109,9 @@ public class GenCVisitor extends Visitor<String> {
 
     List<Type> types = v.getTypeList();
     List<IdNode> ids = v.getIdList();
+    for (IdNode idNode : ids) {
+      changeStringKeywordC(idNode);
+    }
 
     // declaration only
     if (types.size() == 1 && Utility.isListEmpty(v.getConstValueList())) {
@@ -457,4 +462,26 @@ public class GenCVisitor extends Visitor<String> {
       struct F_char * n_char;
       } F_char;
       """;
+
+
+  // if a string is a keyword in C, it will be replaced
+  private void changeStringKeywordC(IdNode idNode) {
+    String str = st(idNode);
+    if (KEYWORDS_C.contains(str)) {
+      stringTable.replace(idNode.getId(), "repl_" + str);
+    }
+  }
+
+  // https://en.cppreference.com/w/c/keyword
+  private static final List<String> KEYWORDS_C =
+      List.of("alignas", "alignof", "auto", "bool", "break", "case", "char", "const", "constexpr",
+          "continue", "default", "do", "double", "else", "enum", "extern", "false", "float", "for",
+          "goto", "if", "inline", "int", "long", "nullptr", "register", "restrict", "return",
+          "short", "signed", "sizeof", "static", "static_assert", "struct", "switch",
+          "thread_local", "true", "typedef", "typeof", "typeof_unqual", "union", "unsigned", "void",
+          "volatile", "while", "_Alignas", "_Alignof", "_Atomic", "_BitInt", "_Bool", "_Complex",
+          "_Decimal128", "_Decimal32", "_Decimal64", "_Generic", "_Imaginary", "_Noreturn",
+          "_Static_assert", "_Thread_local");
+
+
 }

@@ -45,6 +45,12 @@ Dopo le seguenti modifiche, la grammatica non presenta più alcun conflitto.
   Questo controllo avviene nella semantica ed è stato scelto di fare così perché altrimenti
   complicherebbe molto la generazione del linguaggio target C.
 
+## Funzionalità aggiunte
+
+- Nella generazione del codice C, se un ID ha come valore di stringa una keyword in C, al valore di
+  quell'ID verrà aggiunto il suffix _repl__. 
+  _struct_ verrà rinominato in _repl_struct_.
+
 ## Testing
 
 In [src/test/java](src/test/java) sono stati scritti gli Unit Test sia per il Lexer, Parser,

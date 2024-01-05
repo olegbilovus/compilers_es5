@@ -26,9 +26,10 @@ public class StringTable {
     tableIndex.computeIfAbsent(this.idCount, k -> key);
   }
 
-  public void edit(String key, Integer value) {
-    table.replace(key, value);
+  public void replace(Integer value, String key) {
     tableIndex.replace(value, key);
+    table.remove(key, value);
+    table.put(key, value);
   }
 
   @Override
