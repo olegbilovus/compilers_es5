@@ -125,9 +125,9 @@
         <version>0.8.10</version>
         <configuration>
           <excludes>
-            <exclude>main/esercitazione5/parser.**</exclude>
-            <exclude>main/esercitazione5/sym.**</exclude>
-            <exclude>main/esercitazione5/Yylex.**</exclude>
+            <exclude>main/esercitazione5/parser**</exclude>
+            <exclude>main/esercitazione5/sym**</exclude>
+            <exclude>main/esercitazione5/Yylex**</exclude>
           </excludes>
           <includes>
             <include>main/esercitazione5/**</include>
