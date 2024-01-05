@@ -1,5 +1,11 @@
 version = 1
 
+exclude_patterns = [
+    "src/main/esercitazione5/Yylex.java",
+    "src/main/esercitazione5/sym.java",
+    "src/main/esercitazione5/parser.java"
+]
+
 [[analyzers]]
 name = "java"
 
