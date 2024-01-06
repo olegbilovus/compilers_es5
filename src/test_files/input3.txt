@@ -10,9 +10,18 @@ proc main():
   comment
 %
   var b: real;\
+  var in: string;\
+  <-- "Enter an" + "input:" $(in);
+  struct(2.2, @in);
 endproc
 
-proc struct(a: real, c: string):
+proc struct(a: real, out c: string):
+  var d ^= "hello";\
+  c ^= d + c + "end";
+  -->! "Result" + " is: " $(c);
+  var b ^= true; b1 ^= false;\
+
+  --> $(b || b1);
 endproc
 
 func f() -> real:

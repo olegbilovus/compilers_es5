@@ -3,6 +3,7 @@ package main.esercitazione5.visitors;
 import java.util.List;
 import main.esercitazione5.StringTable;
 import main.esercitazione5.Utility;
+import main.esercitazione5.ast.Const;
 import main.esercitazione5.ast.ConstValue;
 import main.esercitazione5.ast.ParamAccess;
 import main.esercitazione5.ast.Type;
@@ -55,8 +56,10 @@ public class GenCVisitor extends Visitor<String> {
 
   @Override public String visit(ProgramOP v) {
     StringBuilder toReturn = new StringBuilder();
-    toReturn.append("#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n");
+    toReturn.append(
+        "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n");
     toReturn.append(STRUCTS).append("\n\n");
+    toReturn.append(STRCAT).append("\n").append(SCANF_STRING);
 
     toReturn.append("// VAR DECLS\n");
     genList(toReturn, v.getVarDeclOPList(), "");
@@ -128,10 +131,16 @@ public class GenCVisitor extends Visitor<String> {
       for (int i = 0; i < v.getTypeList().size(); i++) {
         toReturn.append(toyTypeToCType(types.get(i))).append(" ").append(st(ids.get(i)))
             .append(" = ");
-        if (types.get(i) == Type.STRING) {
-          toReturn.append(getStringConst(constValues.get(i)));
-        } else {
-          toReturn.append(constValues.get(i));
+        switch (types.get(i)) {
+          case STRING -> toReturn.append(getStringConst(constValues.get(i)));
+          case BOOLEAN -> {
+            if (v.getConstValueList().get(i).constType() == Const.TRUE) {
+              toReturn.append(visit(new TrueConstExpr(null)));
+            } else {
+              toReturn.append(visit(new FalseConstExpr(null)));
+            }
+          }
+          default -> toReturn.append(constValues.get(i));
         }
         toReturn.append(";\n");
       }
@@ -176,7 +185,7 @@ public class GenCVisitor extends Visitor<String> {
     StringBuilder toReturn = new StringBuilder();
 
     toReturn.append(toyTypeToCType(v.getType())).append(" ");
-    if (v.getParamAccess() == ParamAccess.OUT) {
+    if (v.getParamAccess() == ParamAccess.OUT && v.getType() != Type.STRING) {
       toReturn.append("* ");
     }
     toReturn.append(st(v.getId()));
@@ -212,6 +221,9 @@ public class GenCVisitor extends Visitor<String> {
   }
 
   @Override public String visit(AddOP v) {
+    if (v.getNodeType() == Type.STRING) {
+      return "_strcat(" + v.getExprLeft().accept(this) + ", " + v.getExprRight().accept(this) + ")";
+    }
     return binaryOP(v, "+");
   }
 
@@ -252,11 +264,11 @@ public class GenCVisitor extends Visitor<String> {
   }
 
   @Override public String visit(EQOP v) {
-    return binaryOP(v, "=");
+    return binaryOP(v, "==");
   }
 
   @Override public String visit(NEOP v) {
-    return binaryOP(v, "<>");
+    return binaryOP(v, "!=");
   }
 
   @Override public String visit(UminusOP v) {
@@ -308,12 +320,13 @@ public class GenCVisitor extends Visitor<String> {
   }
 
   @Override public String visit(IdNode v) {
-    return Boolean.TRUE.equals(v.isRef()) ? "@" + st(v.getId()) : st(v.getId());
+    return Boolean.TRUE.equals(v.isRef()) && v.getNodeType() != Type.STRING ? "&" + st(v.getId())
+        : st(v.getId());
   }
 
   @Override public String visit(ReturnOP v) {
     StringBuilder toReturn = new StringBuilder("return ");
-
+    // TODO
     genList(toReturn, v.getExprList(), COMMA_SEP);
     toReturn.append(";");
 
@@ -322,10 +335,9 @@ public class GenCVisitor extends Visitor<String> {
 
   @Override public String visit(AssignOP v) {
     StringBuilder toReturn = new StringBuilder();
-
     genList(toReturn, v.getIdNodeList(), COMMA_SEP);
-    toReturn.append(" ^= ");
-
+    toReturn.append(" = ");
+    // TODO
     genList(toReturn, v.getExprList(), COMMA_SEP);
     toReturn.append(";");
 
@@ -333,83 +345,110 @@ public class GenCVisitor extends Visitor<String> {
   }
 
   @Override public String visit(WriteOP v) {
-    StringBuilder toReturn = new StringBuilder();
-    if (Boolean.TRUE.equals(v.hasNewline())) {
-      toReturn.append("-->! ");
-    } else {
-      toReturn.append("--> ");
-    }
+    StringBuilder toReturn = new StringBuilder("printf(");
+    StringBuilder placeHolders = new StringBuilder();
+    StringBuilder exprs = new StringBuilder();
 
     if (!Utility.isListEmpty(v.getExprList())) {
       for (Expr e : v.getExprList()) {
-        if (e instanceof StringConstExpr || (e instanceof AddOP
-            && e.getExprRight() instanceof StringConstExpr)) {
-          toReturn.append(e.accept(this));
-        } else {
-          toReturn.append("$(").append(e.accept(this)).append(")");
-        }
-      }
-    }
+        switch (e.getNodeType()) {
+          case STRING -> placeHolders.append("%s");
+          case INTEGER, BOOLEAN -> placeHolders.append("%d");
+          case REAL -> placeHolders.append("%f");
 
-    toReturn.append(";");
+        }
+        exprs.append(e.accept(this)).append(COMMA_SEP);
+      }
+      Utility.deleteLastCommaSpace(exprs);
+    }
+    if (Boolean.TRUE.equals(v.hasNewline())) {
+      placeHolders.append("\\n");
+    }
+    toReturn.append('"').append(placeHolders).append('"').append(COMMA_SEP);
+    toReturn.append(exprs).append(");");
 
     return toReturn.toString();
   }
 
   @Override public String visit(ReadOP v) {
-    StringBuilder toReturn = new StringBuilder("<--");
-
+    StringBuilder toReturn = new StringBuilder();
+    StringBuilder placeHolders = new StringBuilder();
+    StringBuilder exprs = new StringBuilder();
+    boolean newScanf = true;
+    // TODO: fix errors and make it less complex
     if (!Utility.isListEmpty(v.getExprList())) {
       for (Expr e : v.getExprList()) {
         if (e instanceof StringConstExpr || (e instanceof AddOP
-            && e.getExprRight() instanceof StringConstExpr)) {
-          toReturn.append(e.accept(this));
+            && e.getNodeType() == Type.STRING)) {
+          if (!newScanf) {
+            toReturn.append('"').append(placeHolders).append('"').append(COMMA_SEP);
+            toReturn.append(exprs).append(");\n");
+            newScanf = true;
+          }
+          toReturn.append("printf(\"%s\", ").append(e.accept(this)).append(");\n");
         } else {
-          toReturn.append("$(").append(e.accept(this)).append(")");
+          switch (e.getNodeType()) {
+            case STRING -> placeHolders.append("%s");
+            case INTEGER, BOOLEAN -> placeHolders.append("%d");
+            case REAL -> placeHolders.append("%f");
+          }
+          if (newScanf) {
+            if(e.getNodeType() == Type.STRING){
+              toReturn.append("");
+            }
+            toReturn.append("scanf(");
+            placeHolders = new StringBuilder();
+            exprs = new StringBuilder();
+            newScanf = false;
+          }
+          exprs.append(e.accept(this)).append(COMMA_SEP);
         }
       }
+      Utility.deleteLastCommaSpace(exprs);
     }
 
-    toReturn.append(";");
-
+    toReturn.append('"').append(placeHolders).append('"').append(COMMA_SEP);
+    toReturn.append(exprs).append(");\n");
     return toReturn.toString();
   }
 
   @Override public String visit(WhileOP v) {
-    StringBuilder toReturn = new StringBuilder("while ");
-    toReturn.append(v.getCondition().accept(this)).append(" do\n");
+    StringBuilder toReturn = new StringBuilder("while(");
+    toReturn.append(v.getCondition().accept(this)).append("){\n");
 
     genNode(toReturn, v.getBody());
-    toReturn.append("endwhile;");
+    toReturn.append("}");
 
     return toReturn.toString();
   }
 
   @Override public String visit(IfOP v) {
-    StringBuilder toReturn = new StringBuilder("if ");
-    toReturn.append(v.getCondition().accept(this)).append(" then\n");
+    StringBuilder toReturn = new StringBuilder("if(");
+    toReturn.append(v.getCondition().accept(this)).append("){\n");
 
     genNode(toReturn, v.getBody());
+    toReturn.append("}");
     genList(toReturn, v.getElifOPList(), "");
     genNode(toReturn, v.getElse());
-    toReturn.append("endif;");
 
     return toReturn.toString();
   }
 
   @Override public String visit(ElifOP v) {
-    StringBuilder toReturn = new StringBuilder("elseif ");
-    toReturn.append(v.getCondition().accept(this)).append(" then\n");
+    StringBuilder toReturn = new StringBuilder("else if(");
+    toReturn.append(v.getCondition().accept(this)).append("){\n");
 
     genNode(toReturn, v.getBody());
+    toReturn.append("}");
 
     return toReturn.toString();
   }
 
   @Override public String visit(ElseOP v) {
-    StringBuilder toReturn = new StringBuilder("else\n ");
+    StringBuilder toReturn = new StringBuilder("else {\n ");
 
     genNode(toReturn, v.getBody());
+    toReturn.append("}");
 
     return toReturn.toString();
   }
@@ -434,7 +473,7 @@ public class GenCVisitor extends Visitor<String> {
 
   private String toyTypeToCType(Type type) {
     return switch (type) {
-      case INTEGER, BOOLEAN -> "int";
+      case INTEGER, BOOLEAN -> "bool";
       case REAL -> "double";
       case STRING -> "char *";
     };
@@ -462,7 +501,26 @@ public class GenCVisitor extends Visitor<String> {
       struct F_char * n_char;
       } F_char;
       """;
+  private static final String STRCAT = """
+      char * _strcat(char *s1, char *s2){
+        char *res = malloc((strlen(s1) + strlen(s2) + 1) * sizeof(char));
+        strcat(res, s1);
+        strcat(res, s2);
+        return res;
+      }
+      """;
 
+  private static final String SCANF_STRING = """
+      char * _scanf_string(){
+        char c;
+        char *str;
+        for(int len = 0; (c = getc(stdin)) != '\\n'; len++){
+          str = realloc(str, sizeof(char) * len + 1);
+          str[len] = c;
+        }
+        return str;
+      }
+      """;
 
   // if a string is a keyword in C, it will be replaced
   private void changeStringKeywordC(IdNode idNode) {
