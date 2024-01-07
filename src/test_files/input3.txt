@@ -9,10 +9,10 @@ proc main():
   lines
   comment
 %
-  var b: real;\
+  var b, bb: real;\
   var in: string;\
-  <-- "Enter an" + "input:" $(in);
-  struct(2.2, @in);
+  <-- "Enter an " + "input:" $(in) "and two numbers:" $(b) $(bb);
+  struct(b + bb, @in);
 endproc
 
 proc struct(a: real, out c: string):

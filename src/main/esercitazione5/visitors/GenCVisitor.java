@@ -1,5 +1,6 @@
 package main.esercitazione5.visitors;
 
+import java.util.ArrayList;
 import java.util.List;
 import main.esercitazione5.StringTable;
 import main.esercitazione5.Utility;
@@ -59,7 +60,7 @@ public class GenCVisitor extends Visitor<String> {
     toReturn.append(
         "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n");
     toReturn.append(STRUCTS).append("\n\n");
-    toReturn.append(STRCAT).append("\n").append(SCANF_STRING);
+    toReturn.append(STRCAT).append("\n").append(SCANF_STRING).append("\n\n");
 
     toReturn.append("// VAR DECLS\n");
     genList(toReturn, v.getVarDeclOPList(), "");
@@ -326,7 +327,7 @@ public class GenCVisitor extends Visitor<String> {
 
   @Override public String visit(ReturnOP v) {
     StringBuilder toReturn = new StringBuilder("return ");
-    // TODO
+    // TODO: return the struct. Types are known (v.get...), need to gen the struct
     genList(toReturn, v.getExprList(), COMMA_SEP);
     toReturn.append(";");
 
@@ -337,7 +338,7 @@ public class GenCVisitor extends Visitor<String> {
     StringBuilder toReturn = new StringBuilder();
     genList(toReturn, v.getIdNodeList(), COMMA_SEP);
     toReturn.append(" = ");
-    // TODO
+    // TODO: check also if variable is parameter in out, need to manage pointers
     genList(toReturn, v.getExprList(), COMMA_SEP);
     toReturn.append(";");
 
@@ -351,12 +352,7 @@ public class GenCVisitor extends Visitor<String> {
 
     if (!Utility.isListEmpty(v.getExprList())) {
       for (Expr e : v.getExprList()) {
-        switch (e.getNodeType()) {
-          case STRING -> placeHolders.append("%s");
-          case INTEGER, BOOLEAN -> placeHolders.append("%d");
-          case REAL -> placeHolders.append("%f");
-
-        }
+        placeHolders.append(typePlaceholder(e.getNodeType()));
         exprs.append(e.accept(this)).append(COMMA_SEP);
       }
       Utility.deleteLastCommaSpace(exprs);
@@ -372,44 +368,61 @@ public class GenCVisitor extends Visitor<String> {
 
   @Override public String visit(ReadOP v) {
     StringBuilder toReturn = new StringBuilder();
-    StringBuilder placeHolders = new StringBuilder();
-    StringBuilder exprs = new StringBuilder();
-    boolean newScanf = true;
-    // TODO: fix errors and make it less complex
+    List<Type> types = new ArrayList<>();
+    List<Expr> vars = new ArrayList<>();
+
     if (!Utility.isListEmpty(v.getExprList())) {
       for (Expr e : v.getExprList()) {
+        // print the strings
         if (e instanceof StringConstExpr || (e instanceof AddOP
             && e.getNodeType() == Type.STRING)) {
-          if (!newScanf) {
-            toReturn.append('"').append(placeHolders).append('"').append(COMMA_SEP);
-            toReturn.append(exprs).append(");\n");
-            newScanf = true;
+          // create the prev scanf if needed
+          if (!types.isEmpty()) {
+            toReturn.append(scanf(types, vars));
           }
-          toReturn.append("printf(\"%s\", ").append(e.accept(this)).append(");\n");
+          toReturn.append("printf(\"%s\\n\", ").append(e.accept(this)).append(");\n");
         } else {
-          switch (e.getNodeType()) {
-            case STRING -> placeHolders.append("%s");
-            case INTEGER, BOOLEAN -> placeHolders.append("%d");
-            case REAL -> placeHolders.append("%f");
-          }
-          if (newScanf) {
-            if(e.getNodeType() == Type.STRING){
-              toReturn.append("");
+          // scanf
+          if (e instanceof IdNode && e.getNodeType() == Type.STRING) {
+            // create the prev scanf if needed
+            if (!types.isEmpty()) {
+              toReturn.append(scanf(types, vars));
             }
-            toReturn.append("scanf(");
-            placeHolders = new StringBuilder();
-            exprs = new StringBuilder();
-            newScanf = false;
+            // scanf a string
+            toReturn.append("_scanf_string(&").append(e.accept(this)).append(");\n");
+          } else {
+            // scanf the other types of input
+            types.add(e.getNodeType());
+            vars.add(e);
           }
-          exprs.append(e.accept(this)).append(COMMA_SEP);
         }
       }
-      Utility.deleteLastCommaSpace(exprs);
     }
 
-    toReturn.append('"').append(placeHolders).append('"').append(COMMA_SEP);
-    toReturn.append(exprs).append(");\n");
+    if (!types.isEmpty()) {
+      toReturn.append(scanf(types, vars));
+    }
     return toReturn.toString();
+  }
+
+  private String scanf(List<Type> types, List<Expr> vars) {
+    String toReturn =
+        "scanf(\"" + String.join("", types.stream().map(this::typePlaceholder).toList()) + "\", "
+            + String.join(", ", vars.stream().map(expr -> '&' + expr.accept(this)).toList())
+            + ");\n";
+
+    types.clear();
+    vars.clear();
+
+    return toReturn;
+  }
+
+  private String typePlaceholder(Type type) {
+    return switch (type) {
+      case STRING -> "%s";
+      case INTEGER, BOOLEAN -> "%d";
+      case REAL -> "%lf";
+    };
   }
 
   @Override public String visit(WhileOP v) {
@@ -511,14 +524,17 @@ public class GenCVisitor extends Visitor<String> {
       """;
 
   private static final String SCANF_STRING = """
-      char * _scanf_string(){
+      void _scanf_string(char **p){
         char c;
-        char *str;
-        for(int len = 0; (c = getc(stdin)) != '\\n'; len++){
+        char *str = malloc(1 * sizeof(char));
+        int len = 0;
+        for(; (c = getc(stdin)) != '\\n'; len++){
           str = realloc(str, sizeof(char) * len + 1);
           str[len] = c;
         }
-        return str;
+        str = realloc(str, sizeof(char) * len);
+        str[len] = '\\0';
+        *p = str;
       }
       """;
 
