@@ -21,7 +21,7 @@ proc struct(a: real, out c: string):
   -->! "Result" + " is: " $(c);
   var b ^= true; b1 ^= false;\
 
-  --> $(b || b1);
+  --> $(b || b1) $(f());
 endproc
 
 func f() -> real:

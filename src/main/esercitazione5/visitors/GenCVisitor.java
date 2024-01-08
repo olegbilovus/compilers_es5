@@ -60,7 +60,8 @@ public class GenCVisitor extends Visitor<String> {
     toReturn.append(
         "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n");
     toReturn.append(STRUCTS).append("\n\n");
-    toReturn.append(STRCAT).append("\n").append(SCANF_STRING).append("\n\n");
+    toReturn.append(STRCAT).append("\n").append(SCANF_STRING).append("\n").append(RETURN)
+        .append("\n\n");
 
     toReturn.append("// VAR DECLS\n");
     genList(toReturn, v.getVarDeclOPList(), "");
@@ -103,8 +104,10 @@ public class GenCVisitor extends Visitor<String> {
   private String returnTypeC(List<Type> returnTypes) {
     if (Utility.isListEmpty(returnTypes)) {
       return "void";
+    } else if (returnTypes.size() == 1) {
+      return toyTypeToCType(returnTypes.get(0));
     }
-    return "F_" + toyTypeToCType(returnTypes.get(0));
+    return "F_return";
 
   }
 
@@ -326,10 +329,36 @@ public class GenCVisitor extends Visitor<String> {
   }
 
   @Override public String visit(ReturnOP v) {
-    StringBuilder toReturn = new StringBuilder("return ");
-    // TODO: return the struct. Types are known (v.get...), need to gen the struct
-    genList(toReturn, v.getExprList(), COMMA_SEP);
-    toReturn.append(";");
+    StringBuilder toReturn = new StringBuilder();
+
+    int exprSize = v.getExprList().size();
+    List<Expr> exprs = v.getExprList();
+    if (exprSize == 1) {
+      toReturn.append("return ");
+      genNode(toReturn, exprs.get(0));
+      toReturn.append(";");
+    } else {
+      // temp variables closed in an inner scope
+      toReturn.append("// return\n{\n");
+      StringBuilder returnsArray = new StringBuilder("{");
+      for (int i = 0; i < exprSize; i++) {
+        toReturn.append(toyTypeToCType(exprs.get(i).getNodeType())).append(" $t").append(i)
+            .append(" = ").append(exprs.get(i).accept(this)).append(" ;\n");
+
+        toReturn.append("F_return $r").append(i).append(" = { ");
+        if (exprs.get(i).getNodeType() != Type.STRING) {
+          toReturn.append("&");
+        }
+        toReturn.append("$t").append(i).append(" };\n");
+        returnsArray.append("$r").append(i).append(", ");
+      }
+      Utility.deleteLastCommaSpace(returnsArray);
+      returnsArray.append("}");
+
+      toReturn.append("return f_return((F_return[])").append(returnsArray).append(", ")
+          .append(exprSize).append(");\n");
+      toReturn.append("}\n");
+    }
 
     return toReturn.toString();
   }
@@ -486,33 +515,27 @@ public class GenCVisitor extends Visitor<String> {
 
   private String toyTypeToCType(Type type) {
     return switch (type) {
-      case INTEGER, BOOLEAN -> "bool";
+      case INTEGER -> "int";
+      case BOOLEAN -> "bool";
       case REAL -> "double";
       case STRING -> "char *";
     };
   }
 
+  private static final String RETURN = """
+      F_return f_return(F_return returns[], int len){
+        for(int i = 0; i < len - 1; i++){
+          returns[i].next = &returns[i + 1];
+        }
+        return returns[0];
+      }
+      """;
+
   private static final String STRUCTS = """
-      typedef struct F_int{
-      int v;
-      struct F_int * n_int;
-      struct F_double * n_double;
-      struct F_char * n_char;
-      } F_int;
-            
-      typedef struct F_double{
-      double v;
-      struct F_int * n_int;
-      struct F_double * n_double;
-      struct F_char * n_char;
-      } F_double;
-            
-      typedef struct F_char{
-      char * v;
-      struct F_int * n_int;
-      struct F_double * n_double;
-      struct F_char * n_char;
-      } F_char;
+      typedef struct F_return{
+        void * val;
+        struct F_return *next;
+      } F_return;
       """;
   private static final String STRCAT = """
       char * _strcat(char *s1, char *s2){
