@@ -9,8 +9,11 @@ proc main():
   lines
   comment
 %
-  var b, bb: real;\
+  var b, bb: real; bol: boolean;\
   var in: string;\
+  b, bol, in ^= f2();
+  -->! $(b) ", " $(bol) ", " $(in);
+
   <-- "Enter an " + "input:" $(in) "and two numbers:" $(b) $(bb);
   struct(b + bb, @in);
 endproc
@@ -28,8 +31,8 @@ func f() -> real:
   return 1.1;
 endfunc
 
-func f2(s: string) -> real, real, string:
-  return 1.1, 2.2, "hello";
+func f2() -> real, boolean, string:
+  return 1.1, true, "hello";
 endfunc
 
 func f3() -> real, boolean:

@@ -316,7 +316,7 @@ public class GenCVisitor extends Visitor<String> {
   @Override public String visit(CallProcOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(st(v.getId())).append("(");
-
+    // if the param is OUT, the & is added in the IdNode visit
     genList(toReturn, v.getParams(), COMMA_SEP);
     toReturn.append(");");
 
@@ -324,8 +324,8 @@ public class GenCVisitor extends Visitor<String> {
   }
 
   @Override public String visit(IdNode v) {
-    return Boolean.TRUE.equals(v.isRef()) && v.getNodeType() != Type.STRING ? "&" + st(v.getId())
-        : st(v.getId());
+    return Boolean.TRUE.equals(v.isRef()) && v.getNodeType() != Type.STRING
+        && v.getNodeType() != Type.BOOLEAN ? "&" + st(v.getId()) : st(v.getId());
   }
 
   @Override public String visit(ReturnOP v) {
@@ -365,13 +365,50 @@ public class GenCVisitor extends Visitor<String> {
 
   @Override public String visit(AssignOP v) {
     StringBuilder toReturn = new StringBuilder();
-    genList(toReturn, v.getIdNodeList(), COMMA_SEP);
-    toReturn.append(" = ");
-    // TODO: check also if variable is parameter in out, need to manage pointers
-    genList(toReturn, v.getExprList(), COMMA_SEP);
-    toReturn.append(";");
+    List<IdNode> ids = v.getIdNodeList();
+    List<Expr> exprs = v.getExprList();
+
+    for (int i = 0, e = 0; i < ids.size(); i++, e++) {
+      if (exprs.get(e) instanceof CallFunOP callFunOP) {
+        int returns = callFunOP.getTypeList().size();
+        assignMultiReturnFunc(toReturn, ids.subList(i, i + returns), callFunOP);
+        i += returns;
+      } else {
+        Type idNodeType = ids.get(i).getNodeType();
+        if (v.getScopeTable().lookup(ids.get(i).getId(), stringTable).getType().paramAccess()
+            == ParamAccess.OUT && idNodeType != Type.STRING && idNodeType != Type.BOOLEAN) {
+          toReturn.append("*");
+        }
+        toReturn.append(ids.get(i).accept(this)).append(" = ").append(exprs.get(i).accept(this))
+            .append(";\n");
+      }
+    }
 
     return toReturn.toString();
+  }
+
+  private void assignMultiReturnFunc(StringBuilder toReturn, List<IdNode> ids,
+      CallFunOP callFunOP) {
+    // inner block for temp variables
+    toReturn.append("// assign multi return function\n{\n").append("F_return $r = ")
+        .append(callFunOP.accept(this)).append(";\n");
+
+    for (int i = 0; i < ids.size(); i++) {
+      toReturn.append(ids.get(i).accept(this)).append(" = ")
+          .append(castVoidPointer(ids.get(i).getNodeType())).append("$r.")
+          .append("next->".repeat(i)).append("val;\n");
+    }
+    toReturn.append("}\n");
+
+  }
+
+  private String castVoidPointer(Type type) {
+    return switch (type) {
+      case INTEGER -> "*(int *)";
+      case REAL -> "*(double *)";
+      case BOOLEAN -> "(bool *)";
+      case STRING -> "(char *)";
+    };
   }
 
   @Override public String visit(WriteOP v) {
@@ -578,7 +615,8 @@ public class GenCVisitor extends Visitor<String> {
           "thread_local", "true", "typedef", "typeof", "typeof_unqual", "union", "unsigned", "void",
           "volatile", "while", "_Alignas", "_Alignof", "_Atomic", "_BitInt", "_Bool", "_Complex",
           "_Decimal128", "_Decimal32", "_Decimal64", "_Generic", "_Imaginary", "_Noreturn",
-          "_Static_assert", "_Thread_local");
-
+          "_Static_assert", "_Thread_local", /* from here keywords used for GenC */ "_scanf_string",
+          "_strcat", "F_return", "f_return", "printf", "scanf", "bool", "malloc", "realloc", "getc",
+          "sizeof", "strlen", "strcat");
 
 }

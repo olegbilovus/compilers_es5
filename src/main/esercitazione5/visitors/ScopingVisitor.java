@@ -353,13 +353,7 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
     if (!Utility.isListEmpty(exprList)) {
       int numExpr = 0;
       for (Expr expr : exprList) {
-        if (expr instanceof CallFunOP callFunOP) {
-          int numVarReturn = numValReturnFunc(v.getScopeTable(), callFunOP.getId().getId());
-          if (numVarReturn != 1) {
-            throw new FuncMultReturnValScopeException(st(callFunOP.getId()), v.accept(debugVisitor),
-                numVarReturn);
-          }
-        }
+        checkOneReturnFunction(expr);
         numExpr += expr.accept(returnedNumExprVisitor);
       }
       if (expected != numExpr) {
@@ -367,8 +361,18 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
             numExpr);
       }
     } else if (expected != 0) {
-      throw new NumArgsExprIncorrectScopeException(v.accept(debugVisitor), st(id), expected,
-          0);
+      throw new NumArgsExprIncorrectScopeException(v.accept(debugVisitor), st(id), expected, 0);
+    }
+  }
+
+
+  private void checkOneReturnFunction(Node node) {
+    if (node instanceof CallFunOP callFunOP) {
+      int numVarReturn = numValReturnFunc(stack.getFirst(), callFunOP.getId().getId());
+      if (numVarReturn != 1) {
+        throw new FuncMultReturnValScopeException(st(callFunOP.getId()),
+            callFunOP.accept(debugVisitor), numVarReturn);
+      }
     }
   }
 
@@ -415,7 +419,13 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
 
   @Override public ScopeTable visit(WriteOP v) {
     v.setScopeTable(stack.getFirst());
-    visitNodeList(v.getExprList());
+
+    if (!Utility.isListEmpty(v.getExprList())) {
+      for (Expr expr : v.getExprList()) {
+        checkOneReturnFunction(expr);
+        expr.accept(this);
+      }
+    }
 
     return null;
   }
@@ -428,6 +438,7 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
   }
 
   @Override public ScopeTable visit(WhileOP v) {
+    checkOneReturnFunction(v.getCondition());
     v.getCondition().accept(this);
 
     ScopeTable scopeTable = new ScopeTable(stack.getFirst());
@@ -438,6 +449,7 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
   }
 
   @Override public ScopeTable visit(IfOP v) {
+    checkOneReturnFunction(v.getCondition());
     v.getCondition().accept(this);
 
     ScopeTable scopeTable = new ScopeTable(stack.getFirst());
@@ -452,6 +464,7 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
   }
 
   @Override public ScopeTable visit(ElifOP v) {
+    checkOneReturnFunction(v.getCondition());
     v.getCondition().accept(this);
 
     ScopeTable scopeTable = new ScopeTable(stack.getFirst());

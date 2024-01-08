@@ -45,10 +45,13 @@ Dopo le seguenti modifiche, la grammatica non presenta più alcun conflitto.
   Questo controllo avviene nella semantica ed è stato scelto di fare così perché altrimenti
   complicherebbe molto la generazione del linguaggio target C.
 
+- È stato aggiunto un controllo semantico sulle condizioni del controllo di flusso e del while
+  affinché non si ha che come condizione una funzione che ritorni più di un valore.
+
 ## Funzionalità aggiunte
 
 - Nella generazione del codice C, se un ID ha come valore di stringa una keyword in C, al valore di
-  quell'ID verrà aggiunto il suffix _repl__. 
+  quell'ID verrà aggiunto il suffix _repl__.
   _struct_ verrà rinominato in _repl_struct_.
 
 ## Testing
@@ -131,6 +134,14 @@ visitor.
 
 **TypeCheckVisitor**: dopo aver fatto il parsing del source, controllo semantico e generazione delle
 tabelle di scope, controlla che i Type siano rispettati.
+
+### GenC
+
+Nel Run di [GenCTester](src/main/esercitazione5/GenCTester.java) verrà usato il seguente
+visitor.
+
+**GenCVisitor**: dopo aver fatto il parsing del source, controllo semantico, generazione delle
+tabelle di scope, controllo che i Type siano rispettati, genera il linguaggio target C.
 
 ## Gestione errori
 

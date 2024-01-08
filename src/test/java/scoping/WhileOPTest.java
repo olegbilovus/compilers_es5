@@ -1,6 +1,7 @@
 package test.java.scoping;
 
 import main.esercitazione5.scope.ScopeTable;
+import main.esercitazione5.scope.exceptions.FuncMultReturnValScopeException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -23,5 +24,13 @@ public class WhileOPTest {
             "func f() -> real: while true do var a ^= 4;\\ endwhile; return 1; endfunc proc main(): endproc");
     Assertions.assertEquals(1, scopeTable.getTable().size());
     Assertions.assertEquals(2, ScopingUtility.numPrevTables(scopeTable));
+  }
+
+  @Test
+  public void invalid(){
+    // f returns multiple values in a while condition
+    Assertions.assertThrows(FuncMultReturnValScopeException.class,
+        () -> ScopingUtility.astScoped(
+            "func f() -> boolean, real: return true, 1.2; endfunc proc main(): while f() do endwhile; endproc"));
   }
 }
