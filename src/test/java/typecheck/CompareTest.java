@@ -36,6 +36,9 @@ public class CompareTest {
     expr = init("proc main(a: boolean, b: real): a^= 2.8 < -3; endproc");
     Assertions.assertEquals(Type.BOOLEAN, expr.getNodeType());
 
+    expr = init("proc main(a: boolean, b: real): a^= \"hello\" = \"hello\"; endproc");
+    Assertions.assertEquals(Type.BOOLEAN, expr.getNodeType());
+
   }
 
   @Test public void invalid() {

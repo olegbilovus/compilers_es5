@@ -105,8 +105,6 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
     visitNodeList(v.getProcFunParamOPList());
     visitNode(v.getBodyOP());
 
-
-
     return Collections.emptyList();
   }
 
@@ -235,16 +233,26 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
   }
 
   @Override public List<Type> visit(EQOP v) {
-    Type nodeType = compareOPArithmetic(v);
-    v.setTypeList(List.of(nodeType));
-
-    return v.getTypeList();
+    return equalNotEqual(v);
   }
 
   @Override public List<Type> visit(NEOP v) {
-    Type nodeType = compareOPArithmetic(v);
-    v.setTypeList(List.of(nodeType));
+    return equalNotEqual(v);
+  }
 
+  private List<Type> equalNotEqual(Expr v) {
+    Type leftExprType = nodeType(v.getExprLeft()).get(0);
+    Type rightExprType = nodeType(v.getExprRight()).get(0);
+
+    Type nodeType;
+    // String compare
+    if (leftExprType == rightExprType && leftExprType == Type.STRING) {
+      nodeType = Type.BOOLEAN;
+    } else {
+      nodeType = compareOPArithmetic(v);
+    }
+
+    v.setTypeList(List.of(nodeType));
     return v.getTypeList();
   }
 

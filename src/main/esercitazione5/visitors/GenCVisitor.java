@@ -268,10 +268,20 @@ public class GenCVisitor extends Visitor<String> {
   }
 
   @Override public String visit(EQOP v) {
+    if (v.getExprLeft().getNodeType() == v.getExprRight().getNodeType()
+        && v.getExprLeft().getNodeType() == Type.STRING) {
+      return "strcmp(" + v.getExprLeft().accept(this) + ", " + v.getExprRight().accept(this)
+          + ") == 0";
+    }
     return binaryOP(v, "==");
   }
 
   @Override public String visit(NEOP v) {
+    if (v.getExprLeft().getNodeType() == v.getExprRight().getNodeType()
+        && v.getExprLeft().getNodeType() == Type.STRING) {
+      return "strcmp(" + v.getExprLeft().accept(this) + ", " + v.getExprRight().accept(this)
+          + ") != 0";
+    }
     return binaryOP(v, "!=");
   }
 

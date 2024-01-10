@@ -16,6 +16,9 @@ proc main():
 
   <-- "Enter an " + "input:" $(in) "and two numbers:" $(b) $(bb);
   struct(b + bb, @in);
+  if in = "hello" then
+    -->! "hello again" + "!!";
+  endif;
 endproc
 
 proc struct(a: real, out c: string):
