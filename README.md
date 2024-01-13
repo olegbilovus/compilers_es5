@@ -53,6 +53,7 @@ Dopo le seguenti modifiche, la grammatica non presenta più alcun conflitto.
 - Nella generazione del codice C, se un ID ha come valore di stringa una keyword in C, al valore di
   quell'ID verrà aggiunto il suffix _repl__.
   _struct_ verrà rinominato in _repl_struct_.
+- EQ e NE per le stringhe.
 
 ## Testing
 

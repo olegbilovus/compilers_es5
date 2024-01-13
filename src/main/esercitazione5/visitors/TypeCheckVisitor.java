@@ -371,7 +371,8 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
       for (int i = 0; i < expectedTypes.size(); i++) {
         Type expected = expectedTypes.get(i);
         Type given = givenTypes.get(i);
-        if (expected != given) {
+        if (expected != given && !(expected == Type.REAL
+            && given == Type.INTEGER /* allow int to be used with real */)) {
           throw new TypeArgsExprIncorrectTypeCheckException(v.accept(debugVisitor), where, i + 1,
               expected, given);
         }

@@ -10,6 +10,7 @@ proc main():
   comment
 %
   var b, bb: real; bol: boolean;\
+  bb ^= 0;
   var in: string;\
   b, bol, in ^= f2();
   -->! $(b) ", " $(bol) ", " $(in);

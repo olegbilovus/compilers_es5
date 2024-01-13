@@ -34,6 +34,10 @@ public class ParamsTest {
         .get(0);
     Assertions.assertEquals(List.of(Type.REAL, Type.BOOLEAN), callFunOP.getTypeList());
 
+    // integer to a real
+    Assertions.assertDoesNotThrow(() -> init(
+        "func f(a: real) -> real: return 1.2; endfunc proc main(b: real): b^= f(1); endproc"));
+
 
   }
 
@@ -49,10 +53,6 @@ public class ParamsTest {
     // boolean, but expected real
     Assertions.assertThrows(TypeArgsExprIncorrectTypeCheckException.class, () -> init(
         "func f(a: real) -> real: return 1.2; endfunc proc main(b: real): b^= f(true); endproc"));
-
-    // integer, but expected real
-    Assertions.assertThrows(TypeArgsExprIncorrectTypeCheckException.class, () -> init(
-        "func f(a: real) -> real: return 1.2; endfunc proc main(b: real): b^= f(1); endproc"));
 
 
   }

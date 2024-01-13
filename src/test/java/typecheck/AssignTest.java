@@ -22,6 +22,9 @@ public class AssignTest {
     Assertions.assertDoesNotThrow(() -> init(
         "func f(a: real) -> real: return 1.2; endfunc proc main(b: real): b^= f(b); endproc"));
 
+    // integer to real
+    Assertions.assertDoesNotThrow(() -> init(
+        "func f(a: real) -> integer: return 1; endfunc proc main(b: real): b^= f(b); endproc"));
 
   }
 
@@ -37,11 +40,6 @@ public class AssignTest {
     // boolean, but expected real
     Assertions.assertThrows(TypeArgsExprIncorrectTypeCheckException.class, () -> init(
         "func f(a: real) -> boolean: return a > 2; endfunc proc main(b: real): b^= f(b); endproc"));
-
-    // integer, but expected real
-    Assertions.assertThrows(TypeArgsExprIncorrectTypeCheckException.class, () -> init(
-        "func f(a: real) -> integer: return 1; endfunc proc main(b: real): b^= f(b); endproc"));
-
 
   }
 }
