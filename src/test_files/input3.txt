@@ -16,17 +16,20 @@ proc main():
   -->! $(b) ", " $(bol) ", " $(in);
 
   <-- "Enter an " + "input:" $(in) "and two numbers:" $(b) $(bb);
-  struct(b + bb, @in);
+  struct(b + bb, @in, @b);
   if in = "hello" then
     -->! "hello again" + "!!";
   endif;
 endproc
 
-proc struct(a: real, out c: string):
+proc struct(a: real, out c: string, out ref: real):
   var d ^= "hello";\
   c ^= d + c + "end";
   -->! "Result" + " is: " $(c);
   var b ^= true; b1 ^= false;\
+
+  c ^= "hello";
+  ref ^= 5;
 
   --> $(b || b1) $(f());
 endproc

@@ -50,9 +50,11 @@ import main.esercitazione5.ast.nodes.stat.WriteOP;
 public class GenCVisitor extends Visitor<String> {
 
   private static final String COMMA_SEP = ", ";
+  private final DebugVisitor debugVisitor;
 
   public GenCVisitor(StringTable stringTable) {
     super(stringTable);
+    debugVisitor = new DebugVisitor(stringTable);
   }
 
   @Override public String visit(ProgramOP v) {
@@ -60,8 +62,8 @@ public class GenCVisitor extends Visitor<String> {
     toReturn.append(
         "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n");
     toReturn.append(STRUCTS).append("\n\n");
-    toReturn.append(STRCAT).append("\n").append(SCANF_STRING).append("\n").append(RETURN)
-        .append("\n\n");
+    toReturn.append(STRCAT).append("\n").append(SCANF_STRING).append("\n").append(STDIN_FLUSH)
+        .append("\n").append(RETURN).append("\n\n");
 
     toReturn.append("// VAR DECLS\n");
     genList(toReturn, v.getVarDeclOPList(), "");
@@ -122,12 +124,11 @@ public class GenCVisitor extends Visitor<String> {
 
     // declaration only
     if (types.size() == 1 && Utility.isListEmpty(v.getConstValueList())) {
-      toReturn.append(toyTypeToCType(types.get(0))).append(" ");
       for (IdNode idNode : ids) {
-        toReturn.append(st(idNode)).append(COMMA_SEP);
+        toReturn.append(toyTypeToCType(types.get(0))).append(" ");
+        toReturn.append(st(idNode));
+        toReturn.append(";\n");
       }
-      Utility.deleteLastCommaSpace(toReturn);
-      toReturn.append(";\n");
     } else
     // initializations only
     {
@@ -189,7 +190,7 @@ public class GenCVisitor extends Visitor<String> {
     StringBuilder toReturn = new StringBuilder();
 
     toReturn.append(toyTypeToCType(v.getType())).append(" ");
-    if (v.getParamAccess() == ParamAccess.OUT && v.getType() != Type.STRING) {
+    if (v.getParamAccess() == ParamAccess.OUT) {
       toReturn.append("* ");
     }
     toReturn.append(st(v.getId()));
@@ -334,8 +335,16 @@ public class GenCVisitor extends Visitor<String> {
   }
 
   @Override public String visit(IdNode v) {
-    return Boolean.TRUE.equals(v.isRef()) && v.getNodeType() != Type.STRING
-        && v.getNodeType() != Type.BOOLEAN ? "&" + st(v.getId()) : st(v.getId());
+    StringBuilder toReturn = new StringBuilder();
+    if (v.getScopeTable().lookup(v.getId(), stringTable).getType().paramAccess() == ParamAccess.OUT
+        && v.getNodeType() != Type.BOOLEAN) {
+      toReturn.append("*");
+    } else if (Boolean.TRUE.equals(v.isRef()) && v.getNodeType() != Type.BOOLEAN) {
+      toReturn.append("&");
+    }
+
+    toReturn.append(st(v.getId()));
+    return toReturn.toString();
   }
 
   @Override public String visit(ReturnOP v) {
@@ -378,23 +387,25 @@ public class GenCVisitor extends Visitor<String> {
     List<IdNode> ids = v.getIdNodeList();
     List<Expr> exprs = v.getExprList();
 
-    for (int i = 0, e = 0; i < ids.size(); i++, e++) {
-      if (exprs.get(e) instanceof CallFunOP callFunOP) {
-        int returns = callFunOP.getTypeList().size();
-        assignMultiReturnFunc(toReturn, ids.subList(i, i + returns), callFunOP);
-        i += returns;
-      } else {
-        Type idNodeType = ids.get(i).getNodeType();
-        if (v.getScopeTable().lookup(ids.get(i).getId(), stringTable).getType().paramAccess()
-            == ParamAccess.OUT && idNodeType != Type.STRING && idNodeType != Type.BOOLEAN) {
-          toReturn.append("*");
+    if (ids.size() == 1) {
+      assignC(toReturn, ids.get(0), exprs.get(0));
+    } else {
+      for (int i = 0, e = 0; i < ids.size(); i++, e++) {
+        if (exprs.get(e) instanceof CallFunOP callFunOP) {
+          int returns = callFunOP.getTypeList().size();
+          assignMultiReturnFunc(toReturn, ids.subList(i, i + returns), callFunOP);
+          i += returns;
+        } else {
+          assignC(toReturn, ids.get(i), exprs.get(i));
         }
-        toReturn.append(ids.get(i).accept(this)).append(" = ").append(exprs.get(i).accept(this))
-            .append(";\n");
       }
     }
 
     return toReturn.toString();
+  }
+
+  private void assignC(StringBuilder toReturn, IdNode idNode, Expr expr) {
+    toReturn.append(idNode.accept(this)).append(" = ").append(expr.accept(this)).append(";\n");
   }
 
   private void assignMultiReturnFunc(StringBuilder toReturn, List<IdNode> ids,
@@ -436,7 +447,10 @@ public class GenCVisitor extends Visitor<String> {
     if (Boolean.TRUE.equals(v.hasNewline())) {
       placeHolders.append("\\n");
     }
-    toReturn.append('"').append(placeHolders).append('"').append(COMMA_SEP);
+    toReturn.append('"').append(placeHolders).append('"');
+    if (!Utility.isListEmpty(v.getExprList())) {
+      toReturn.append(COMMA_SEP);
+    }
     toReturn.append(exprs).append(");");
 
     return toReturn.toString();
@@ -486,6 +500,8 @@ public class GenCVisitor extends Visitor<String> {
         "scanf(\"" + String.join("", types.stream().map(this::typePlaceholder).toList()) + "\", "
             + String.join(", ", vars.stream().map(expr -> '&' + expr.accept(this)).toList())
             + ");\n";
+
+    toReturn += "stdin_flush();\n";
 
     types.clear();
     vars.clear();
@@ -595,16 +611,25 @@ public class GenCVisitor extends Visitor<String> {
 
   private static final String SCANF_STRING = """
       void _scanf_string(char **p){
+        fflush(stdin);
         char c;
         char *str = malloc(1 * sizeof(char));
         int len = 0;
-        for(; (c = getc(stdin)) != '\\n'; len++){
+        for(; (c = getchar()) != '\\n' && c != EOF; len++){
           str = realloc(str, sizeof(char) * len + 1);
           str[len] = c;
         }
         str = realloc(str, sizeof(char) * len);
         str[len] = '\\0';
         *p = str;
+      }
+      """;
+
+  private static final String STDIN_FLUSH = """
+      void stdin_flush(){
+        fflush(stdin);
+        char c;
+        while ((c = getchar()) != EOF && c != '\\n');
       }
       """;
 

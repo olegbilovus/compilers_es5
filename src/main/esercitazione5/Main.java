@@ -29,6 +29,7 @@ public class Main {
     parser.addArgument("-i").type(Arguments.fileType().verifyCanRead())
         .help("Take the input from a file.");
     parser.addArgument("-o").type(Arguments.fileType().verifyCanCreate()).help("Output to a file.");
+    parser.addArgument("-v").action(Arguments.storeTrue()).help("Parser verbose.");
 
     final String[] availableVisitors =
         {"gen_c", "type_check", "graphviz_scope", "scope_check", "semantic_check", "graphviz_ast",
@@ -67,7 +68,12 @@ public class Main {
 
     Yylex lexer = new Yylex(reader);
     parser p = new parser(lexer);
-    ProgramOP ast = (ProgramOP) p.parse().value;
+    ProgramOP ast;
+    if (Boolean.TRUE.equals(ns.getBoolean("v"))) {
+      ast = (ProgramOP) p.debug_parse().value;
+    } else {
+      ast = (ProgramOP) p.parse().value;
+    }
     StringTable st = lexer.getStringTable();
 
     final boolean[] chosenVisitor = new boolean[availableVisitors.length];
