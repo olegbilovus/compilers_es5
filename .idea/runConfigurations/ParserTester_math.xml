@@ -4,7 +4,7 @@
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="main.esercitazione5.ParserTester" />
     <module name="bilovus_es5" />
-    <option name="PROGRAM_PARAMETERS" value="$ProjectFileDir$ math.txt" />
+    <option name="PROGRAM_PARAMETERS" value="$ProjectFileDir$ math.toy2" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="main.esercitazione5.*" />

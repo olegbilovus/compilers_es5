@@ -6,17 +6,17 @@ proc main():
   format ^= 1;\
 
   while !legal do
-    <-- "Scegli l'operazione: " + "1. +," + "2. -," + "3. *" + "4. /" $(op);
+    <-- "Scegli l'operazione: " + "1. +\t" + "2. -\t" + "3. *\t" + "4. /\t" $(op);
     if op >= 1 && op <= 4 then
-      <-- "Formato: " + "1. integer" + "2. real" $(format);
+      <-- "Formato: " + "1. integer\t" + "2. real\t" $(format);
       if format = 1 || format = 2 then
-        --> "Inserisci il primo numero:";
+        --> "Inserisci il primo numero: ";
         if format = 1 then
           <-- $(i1);
         else
           <-- $(r1);
         endif;
-        --> "Inserisci il secondo numero";
+        --> "Inserisci il secondo numero: ";
         if format = 1 then
           <-- $(i2);
         else
@@ -24,10 +24,10 @@ proc main():
         endif;
         legal ^= true;
       else
-        -->! $(format) "non è un formato valido";
+        -->! $(format) "non è un formato valido.";
       endif;
     else
-      -->! $(op) "non è una operazione valida";
+      -->! $(op) "non è una operazione valida.";
     endif;
   endwhile;
 
@@ -58,7 +58,7 @@ proc main():
     endif;
   endif;
 
-  --> "Risultato:";
+  --> "Risultato: ";
   if format = 1 then
     -->! $(ires);
   else

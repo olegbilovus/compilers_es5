@@ -1,8 +1,10 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="ParserTester_input2" type="Application" factoryName="Application">
+  <configuration default="false" name="ParserTester_fibonacci" type="Application" factoryName="Application">
+    <option name="ALTERNATIVE_JRE_PATH" value="17" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="main.esercitazione5.ParserTester" />
     <module name="bilovus_es5" />
-    <option name="PROGRAM_PARAMETERS" value="$ProjectFileDir$ input2.txt" />
+    <option name="PROGRAM_PARAMETERS" value="$ProjectFileDir$ fibonacci.toy2" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="main.esercitazione5.*" />

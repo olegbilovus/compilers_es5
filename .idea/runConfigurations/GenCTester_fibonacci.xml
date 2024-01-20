@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="ParserTester_input3" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="main.esercitazione5.ParserTester" />
+  <configuration default="false" name="GenCTester_fibonacci" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="main.esercitazione5.GenCTester" />
     <module name="bilovus_es5" />
-    <option name="PROGRAM_PARAMETERS" value="$ProjectFileDir$ input3.toy2" />
+    <option name="PROGRAM_PARAMETERS" value="$ProjectFileDir$ fibonacci.toy2" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="main.esercitazione5.*" />

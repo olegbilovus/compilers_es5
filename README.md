@@ -63,6 +63,16 @@ Tra le configurazioni di Run, c'è una che avvia tutti gli Unit Test.
 
 Nelle configurazioni del Run ci sono anche quelle per fare il testing dei file di input nelle varie
 fasi del compilatore.
+Sono stati scritti i seguenti file di input:
+- [elearning.toy2](src/test_files/elearning.toy2) il programma presente su elearning della somma.
+- [math.toy2](src/test_files/math.toy2) il programma richiesto nel punto #1 dell'esercitazione 4,
+   ossia una semplice calcolatrice.
+- [multiplication.toy2](src/test_files/multiplication.toy2) prende in input un intero positivo e ne
+  stampa la tabella delle moltiplicazioni da 0 a 10.
+- [input3.toy2](src/test_files/input3.toy2) un programma che non fa niente di utile ma testa le 
+  funzioni con ritorno multiplo.
+- [fibonacci.toy2](src/test_files/fibonacci.toy2) calcola la serie di Fibonacci per un _n_ e stampa
+  se è pari.
 
 ## Visitors
 
@@ -89,11 +99,11 @@ dei seguenti visitor.
    possibile esplorare l'AST, per muoversi nell'albero basta tenere premuto CTRL e usare il mouse
    per trascinare.
 
-Qui sotto un esempio di AST sull'[input1.txt](/src/test_files/input1.txt), ossia il codice di
+Qui sotto un esempio di AST sull'[elearning.txt](/src/test_files/elearning.toy2), ossia il codice di
 esempio presente su e-learning.
-[Link all'immagine.](src/main/esercitazione5/images/AST_input1.svg)
+[Link all'immagine.](src/main/esercitazione5/images/AST_elearning.svg)
 
-![AST_input1.png](src/main/esercitazione5/images/AST_input1.png)
+![AST_elearning.png](src/main/esercitazione5/images/AST_elearning.png)
 
 ### Semantic
 
@@ -122,11 +132,11 @@ dei seguenti visitor.
    Dal sito è possibile esplorare le tabelle, per muoversi tenere premuto CTRL e usare il mouse
    per trascinare.
 
-Qui sotto un esempio di tabelle di scoping sull'[input1.txt](/src/test_files/input1.txt), ossia il
+Qui sotto un esempio di tabelle di scoping sull'[elearning.txt](/src/test_files/elearning.toy2), ossia il
 codice di esempio presente su e-learning.
-[Link all'immagine.](src/main/esercitazione5/images/Scope_input1.svg)
+[Link all'immagine.](src/main/esercitazione5/images/Scope_elearning.svg)
 
-![AST_input1.png](src/main/esercitazione5/images/Scope_input1.png)
+![AST_elearning.png](src/main/esercitazione5/images/Scope_elearning.png)
 
 ### TypeCheck
 
@@ -217,7 +227,7 @@ operazioni
 aritmetiche prendendo l'input dall'utente. Sono stati usati quasi tutti i costrutti della
 grammatica.
 
-In [src/test_files/math.txt](src/test_files/math.txt) c'è il source code di Math in Toy2.
+In [src/test_files/math.txt](src/test_files/math.toy2) c'è il source code di Math in Toy2.
 
 In [src/main/esercitazione4/images/AST_math.svg](src/main/esercitazione5/images/AST_math.svg) c'è il
 suo AST.

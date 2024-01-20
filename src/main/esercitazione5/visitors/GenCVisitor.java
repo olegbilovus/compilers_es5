@@ -394,7 +394,7 @@ public class GenCVisitor extends Visitor<String> {
         if (exprs.get(e) instanceof CallFunOP callFunOP) {
           int returns = callFunOP.getTypeList().size();
           assignMultiReturnFunc(toReturn, ids.subList(i, i + returns), callFunOP);
-          i += returns;
+          i += returns - 1; /* -1 because it will be increased again later */
         } else {
           assignC(toReturn, ids.get(i), exprs.get(i));
         }
@@ -427,7 +427,7 @@ public class GenCVisitor extends Visitor<String> {
     return switch (type) {
       case INTEGER -> "*(int *)";
       case REAL -> "*(double *)";
-      case BOOLEAN -> "(bool *)";
+      case BOOLEAN -> "*(bool *)";
       case STRING -> "(char *)";
     };
   }

@@ -1,0 +1,44 @@
+func fib(n: integer) -> integer, boolean:
+  if n = 0 || n = 1 then
+    return 1, false;
+  endif;
+
+  var res, res1, res2: integer; even, even1, even2: boolean;\
+  res1, even1, res2, even2 ^= fib(n - 1), fib(n - 2);
+
+  res ^= res1 + res2;
+  even ^= isEven(res);
+
+  return res, even;
+
+endfunc
+
+proc main():
+  var n: integer;\
+  <-- "Enter an integer number > 1" $(n);
+
+  if n < 1 then
+    -->! $(n) " is not a valid number";
+  else
+    var res: integer; even: boolean;\
+    res, even ^= fib(n);
+    -->! "Result: " $(res);
+    --> "The number is ";
+    if !even then
+      --> "not ";
+    endif;
+    -->! "even.";
+  endif;
+
+endproc
+
+% not efficient, but there is no modulo or bitwise operator %
+func isEven(n: integer) -> boolean:
+  var isEven ^= false; i ^= 1;\
+  while i < n do
+    isEven ^= !isEven;
+    i ^= i + 1;
+  endwhile;
+
+  return isEven;
+endfunc

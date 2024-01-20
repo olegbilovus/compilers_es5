@@ -1,0 +1,23 @@
+% print IN * {0...MAX} %
+
+var MAX ^= 10;\
+
+proc main():
+  var in: integer;\
+  <-- "Input a positive integer" $(in);
+
+  if in < 0 then
+    -->! "'" $(in) "' is not a positive integer";
+  else
+    var i ^= 0;\
+    while i <= MAX do
+      printResult(in, i);
+      i ^= i + 1;
+    endwhile;
+  endif;
+
+endproc
+
+proc printResult(in: integer, i: integer):
+  -->! $(in) " * " $(i) " = " $(in * i);
+endproc

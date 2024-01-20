@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="SemanticTester_input2" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="main.esercitazione5.SemanticTester" />
+  <configuration default="false" name="ScopingTester_elearning" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="main.esercitazione5.ScopingTester" />
     <module name="bilovus_es5" />
-    <option name="PROGRAM_PARAMETERS" value="$ProjectFileDir$ input2.txt" />
+    <option name="PROGRAM_PARAMETERS" value="$ProjectFileDir$ elearning.toy2" />
     <extension name="coverage">
       <pattern>
         <option name="PATTERN" value="main.esercitazione5.*" />
