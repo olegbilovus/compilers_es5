@@ -58,21 +58,24 @@ Dopo le seguenti modifiche, la grammatica non presenta più alcun conflitto.
 ## Testing
 
 In [src/test/java](src/test/java) sono stati scritti gli Unit Test sia per il Lexer, Parser,
-Scoping.
+Scoping e TypeChecking.
 Tra le configurazioni di Run, c'è una che avvia tutti gli Unit Test.
 
 Nelle configurazioni del Run ci sono anche quelle per fare il testing dei file di input nelle varie
 fasi del compilatore.
 Sono stati scritti i seguenti file di input:
+
 - [elearning.toy2](src/test_files/elearning.toy2) il programma presente su elearning della somma.
 - [math.toy2](src/test_files/math.toy2) il programma richiesto nel punto #1 dell'esercitazione 4,
-   ossia una semplice calcolatrice.
+  ossia una semplice calcolatrice.
 - [multiplication.toy2](src/test_files/multiplication.toy2) prende in input un intero positivo e ne
   stampa la tabella delle moltiplicazioni da 0 a 10.
-- [input3.toy2](src/test_files/input3.toy2) un programma che non fa niente di utile ma testa le 
+- [input3.toy2](src/test_files/input3.toy2) un programma che non fa niente di utile ma testa le
   funzioni con ritorno multiplo.
 - [fibonacci.toy2](src/test_files/fibonacci.toy2) calcola la serie di Fibonacci per un _n_ e stampa
   se è pari.
+- [pascalTriangle.toy2](src/test_files/pascalTriangle.toy2) stampa il Triangolo di Pascal per un
+  numero di righe.
 
 ## Visitors
 
@@ -132,7 +135,8 @@ dei seguenti visitor.
    Dal sito è possibile esplorare le tabelle, per muoversi tenere premuto CTRL e usare il mouse
    per trascinare.
 
-Qui sotto un esempio di tabelle di scoping sull'[elearning.txt](/src/test_files/elearning.toy2), ossia il
+Qui sotto un esempio di tabelle di scoping sull'[elearning.txt](/src/test_files/elearning.toy2),
+ossia il
 codice di esempio presente su e-learning.
 [Link all'immagine.](src/main/esercitazione5/images/Scope_elearning.svg)
 
@@ -234,3 +238,45 @@ suo AST.
 
 In [src/main/esercitazione4/images/Scope_math.svg](src/main/esercitazione5/images/Scope_math.svg) ci
 sono le sue tabelle di scoping.
+
+## Main
+
+In [Main.java](src/main/esercitazione5/Main.java) è stato scritto un programma che può essere
+eseguito da linea di commando per compilare un source Toy2 in una delle qualsiasi fasi del
+compilatore.
+
+Bisogna eseguire `mvn package` per avere il `jar` di esso che sarà disponibile nella
+cartella `target`. 
+
+### Usage
+Il programma può essere semplicemente eseguito con:
+```bash
+java -jar bilovus_es5-1.0-SNAPSHOT.jar
+```
+
+Si possono aggiungere opzioni quando si esegue il programma in base alle necessità.
+```
+usage: Toy2 to stages of a compiler
+       [-h] [-i I] [-o O] [-v] [--gen_c | --type_check |
+       --graphviz_scope | --scope_check | --semantic_check | --graphviz_ast
+       | --debug]
+
+Translate a Toy2 source to different stages of a compiler.
+
+named arguments:
+  -h, --help             show this help message and exit
+  -i I                   Take the input from a file.
+  -o O                   Output to a file.
+  -v                     Parser verbose.
+
+Visitor type:
+  --gen_c                (default) Generate the C code.
+  --type_check           Check that there is no type errors.
+  --graphviz_scope       Create a Graphviz Tables  diagram  in dot language
+                         which shows all the scoping tables.
+  --scope_check          Check that there is no scoping errors.
+  --semantic_check       Check that there is no semantic errors.
+  --graphviz_ast         Create a Graphviz AST diagram in dot language.
+  --debug                Debug the Lexer and Parser.  The input will run on
+                         both and produce the equivalent of source in Toy2.
+```
