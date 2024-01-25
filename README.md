@@ -1,3 +1,6 @@
+## CI
+Per CI viene usato [Main.java](src/main/esercitazione5/Main.java) e rispetta le direttive di output.
+
 ## Modifiche alla grammatica
 
 [Immagine diagramma di stati LALR della grammatica](src/main/esercitazione5/images/LALR.svg)
