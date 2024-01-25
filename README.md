@@ -65,16 +65,16 @@ Nelle configurazioni del Run ci sono anche quelle per fare il testing dei file d
 fasi del compilatore.
 Sono stati scritti i seguenti file di input:
 
-- [elearning.toy2](src/test_files/elearning.toy2) il programma presente su elearning della somma.
-- [math.toy2](src/test_files/math.toy2) il programma richiesto nel punto #1 dell'esercitazione 4,
+- [elearning.toy2](test_files/elearning.toy2) il programma presente su elearning della somma.
+- [math.toy2](test_files/math.toy2) il programma richiesto nel punto #1 dell'esercitazione 4,
   ossia una semplice calcolatrice.
-- [multiplication.toy2](src/test_files/multiplication.toy2) prende in input un intero positivo e ne
+- [multiplication.toy2](test_files/multiplication.toy2) prende in input un intero positivo e ne
   stampa la tabella delle moltiplicazioni da 0 a 10.
-- [input3.toy2](src/test_files/input3.toy2) un programma che non fa niente di utile ma testa le
+- [input3.toy2](test_files/input3.toy2) un programma che non fa niente di utile ma testa le
   funzioni con ritorno multiplo.
-- [fibonacci.toy2](src/test_files/fibonacci.toy2) calcola la serie di Fibonacci per un _n_ e stampa
+- [fibonacci.toy2](test_files/fibonacci.toy2) calcola la serie di Fibonacci per un _n_ e stampa
   se è pari.
-- [pascalTriangle.toy2](src/test_files/pascalTriangle.toy2) stampa il Triangolo di Pascal per un
+- [pascalTriangle.toy2](test_files/pascalTriangle.toy2) stampa il Triangolo di Pascal per un
   numero di righe.
 
 ## Visitors
@@ -102,7 +102,7 @@ dei seguenti visitor.
    possibile esplorare l'AST, per muoversi nell'albero basta tenere premuto CTRL e usare il mouse
    per trascinare.
 
-Qui sotto un esempio di AST sull'[elearning.txt](/src/test_files/elearning.toy2), ossia il codice di
+Qui sotto un esempio di AST sull'[elearning.txt](/test_files/elearning.toy2), ossia il codice di
 esempio presente su e-learning.
 [Link all'immagine.](src/main/esercitazione5/images/AST_elearning.svg)
 
@@ -135,7 +135,7 @@ dei seguenti visitor.
    Dal sito è possibile esplorare le tabelle, per muoversi tenere premuto CTRL e usare il mouse
    per trascinare.
 
-Qui sotto un esempio di tabelle di scoping sull'[elearning.txt](/src/test_files/elearning.toy2),
+Qui sotto un esempio di tabelle di scoping sull'[elearning.txt](/test_files/elearning.toy2),
 ossia il
 codice di esempio presente su e-learning.
 [Link all'immagine.](src/main/esercitazione5/images/Scope_elearning.svg)
@@ -231,7 +231,7 @@ operazioni
 aritmetiche prendendo l'input dall'utente. Sono stati usati quasi tutti i costrutti della
 grammatica.
 
-In [src/test_files/math.txt](src/test_files/math.toy2) c'è il source code di Math in Toy2.
+In [src/test_files/math.txt](test_files/math.toy2) c'è il source code di Math in Toy2.
 
 In [src/main/esercitazione4/images/AST_math.svg](src/main/esercitazione5/images/AST_math.svg) c'è il
 suo AST.
@@ -239,9 +239,9 @@ suo AST.
 In [src/main/esercitazione4/images/Scope_math.svg](src/main/esercitazione5/images/Scope_math.svg) ci
 sono le sue tabelle di scoping.
 
-## Main
+## CLI
 
-In [Main.java](src/main/esercitazione5/Main.java) è stato scritto un programma che può essere
+In [CLI.java](src/main/esercitazione5/CLI.java) è stato scritto un programma che può essere
 eseguito da linea di commando per compilare un source Toy2 in una delle qualsiasi fasi del
 compilatore.
 
