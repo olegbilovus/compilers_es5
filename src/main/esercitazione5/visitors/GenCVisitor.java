@@ -63,7 +63,7 @@ public class GenCVisitor extends Visitor<String> {
         "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n");
     toReturn.append(STRUCTS).append("\n\n");
     toReturn.append(STRCAT).append("\n").append(SCANF_STRING).append("\n").append(STDIN_FLUSH)
-        .append("\n").append(RETURN).append("\n\n");
+        .append("\n").append(TO_STRING).append("\n").append(RETURN).append("\n\n");
 
     toReturn.append("// VAR DECLS\n");
     genList(toReturn, v.getVarDeclOPList(), "");
@@ -227,9 +227,20 @@ public class GenCVisitor extends Visitor<String> {
 
   @Override public String visit(AddOP v) {
     if (v.getNodeType() == Type.STRING) {
-      return "_strcat(" + v.getExprLeft().accept(this) + ", " + v.getExprRight().accept(this) + ")";
+      return "_strcat(" + addOPToString(v.getExprLeft()) + ", " + addOPToString(v.getExprRight())
+          + ")";
     }
     return binaryOP(v, "+");
+  }
+
+  private String addOPToString(Expr expr) {
+    String exprVal = expr.accept(this);
+    return switch (expr.getNodeType()) {
+      case INTEGER -> "iToS(" + exprVal + ", " + exprVal.length() + ")";
+      case REAL -> "dToS(" + exprVal + ", " + exprVal.length() + ")";
+      case BOOLEAN -> "bToS(" + exprVal + ")";
+      case STRING -> expr.accept(this);
+    };
   }
 
   @Override public String visit(MulOP v) {
@@ -631,6 +642,30 @@ public class GenCVisitor extends Visitor<String> {
         char c;
         while ((c = getchar()) != EOF && c != '\\n');
       }
+      """;
+
+  private static final String TO_STRING = """
+      char * iToS(int i, int nums){
+        char *str = malloc(sizeof(char) * (nums + 1));
+        sprintf(str, "%d", i);
+            
+        return str;
+      }
+            
+      char * dToS(double d, int nums){
+        char *str = malloc(sizeof(char) * (nums + 1));
+        sprintf(str, "%lf", d);
+            
+        return str;
+      }
+            
+      char * bToS(bool b){
+        if(b) {
+          return "1";
+        }
+          return "0";
+      }
+            
       """;
 
   // if a string is a keyword in C, it will be replaced

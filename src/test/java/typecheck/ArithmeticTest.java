@@ -48,21 +48,18 @@ public class ArithmeticTest {
     expr = init("proc main(a: string): a^= \"hello\" + \"world\"; endproc");
     Assertions.assertEquals(Type.STRING, expr.getNodeType());
 
+    expr = init("proc main(a: string): a^= 1+\"1\"; endproc");
+    Assertions.assertEquals(Type.STRING, expr.getNodeType());
+
+    expr = init("proc main(a: string): a^= 1.1+\"1\"; endproc");
+    Assertions.assertEquals(Type.STRING, expr.getNodeType());
+
+    expr = init("proc main(a: string): a^= true+\"1\"; endproc");
+    Assertions.assertEquals(Type.STRING, expr.getNodeType());
+
   }
 
   @Test public void invalid() {
-    // int  + string
-    Assertions.assertThrows(ArithmeticTypeCheckException.class,
-        () -> init("proc main(a: real): a^= 1+\"1\"; endproc"));
-
-    // real  + string
-    Assertions.assertThrows(ArithmeticTypeCheckException.class,
-        () -> init("proc main(a: real): a^= 1.5+\"1\"; endproc"));
-
-    // real  + string
-    Assertions.assertThrows(ArithmeticTypeCheckException.class,
-        () -> init("proc main(a: real, s: string): a^= 1.5+s; endproc"));
-
     // int  + boolean
     Assertions.assertThrows(ArithmeticTypeCheckException.class,
         () -> init("proc main(a: real): a^= 1+true; endproc"));

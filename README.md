@@ -57,6 +57,7 @@ Dopo le seguenti modifiche, la grammatica non presenta più alcun conflitto.
   quell'ID verrà aggiunto il suffix _repl__.
   _struct_ verrà rinominato in _repl_struct_.
 - EQ e NE per le stringhe.
+- Concatenazione di String con gli altri tipi.
 
 ## Testing
 

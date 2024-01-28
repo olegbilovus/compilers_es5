@@ -50,14 +50,17 @@ proc main():
 	sommac(a, x, b, @taglia, @risultato);
 
 	var valore ^= "nok";\
-	valore ^= stampa(a, b, c, taglia, risultato);
+
+	valore ^= stampa("la somma di " + a + " e " + b +  " incrementata di "  + c +  " è " + taglia);
+	valore ^= stampa("ed è pari a " + risultato);
 
 	<-- "vuoi continuare? (si/no) - inserisci due volte la risposta" $(ans) $(ans1) ;
 	while ans = "si" do
 	    <-- "inserisci un intero:" $(a);
 	    <-- "inserisci un reale:" $(b);
 	    sommac(a, x, b, @taglia, @risultato);
-	    valore ^= stampa(a, b, c, taglia, risultato);
+	    valore ^= stampa("la somma di " + a + " e " + b +  " incrementata di " + c + " è " + taglia);
+	    valore ^= stampa(" ed è pari a " + risultato);
 	    <-- "vuoi continuare? (si/no):\t" $(ans);
         endwhile;
 
@@ -68,14 +71,39 @@ endproc
 
 
 % stampa il messaggio dopo 4 ritorni a capo %
-func stampa(a: real, b: real, c: integer, taglia: string, risultato: real) -> string:
+func stampa(messaggio: string)-> string:
     var i ^= 0;\
     while i < 4 do
-	    -->! ;
-	    i ^= i + 1;
+	-->! ;
+	  i ^= i + 1;
     endwhile;
 
-    -->! "la somma di " $(a) " e " $(b)  " incrementata di "  $(c)  " è " $(taglia);
-    -->! " ed è pari a " $(risultato);
+     --> $(messaggio);
     return "ok";
 endfunc
+
+
+%****** OUTPUT ATTESO ********
+
+
+
+
+la somma di 1 e 2.2 incrementata di 1 è piccola
+ed è pari a 3.2
+vuoi continuare? (si/no) - inserisci due volte la risposta
+si
+si
+inserisci un intero: 50
+inserisci un reale: 60
+
+
+
+
+la somma di 50 e 60.0 incrementata di 1 è grande
+ed è pari a 111.0
+vuoi continuare? (si/no) - inserisci due volte la risposta
+no
+no
+
+ciao
+%

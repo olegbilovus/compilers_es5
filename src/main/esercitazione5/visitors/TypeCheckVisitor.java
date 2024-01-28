@@ -153,7 +153,7 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
 
     Type nodeType;
     // String concat
-    if (leftExprType == rightExprType && leftExprType == Type.STRING) {
+    if (leftExprType == Type.STRING || rightExprType == Type.STRING) {
       nodeType = Type.STRING;
     } else {
       nodeType = binaryOPArithmetic(v);
@@ -245,8 +245,9 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
     Type rightExprType = nodeType(v.getExprRight()).get(0);
 
     Type nodeType;
-    // String compare
-    if (leftExprType == rightExprType && leftExprType == Type.STRING) {
+    // String and Boolean compare
+    if (leftExprType == rightExprType && (leftExprType == Type.STRING
+        || leftExprType == Type.BOOLEAN)) {
       nodeType = Type.BOOLEAN;
     } else {
       nodeType = compareOPArithmetic(v);

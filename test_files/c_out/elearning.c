@@ -36,6 +36,28 @@ void stdin_flush(){
   while ((c = getchar()) != EOF && c != '\n');
 }
 
+char * iToS(int i, int nums){
+  char *str = malloc(sizeof(char) * (nums + 1));
+  sprintf(str, "%d", i);
+
+  return str;
+}
+
+char * dToS(double d, int nums){
+  char *str = malloc(sizeof(char) * (nums + 1));
+  sprintf(str, "%lf", d);
+
+  return str;
+}
+
+char * bToS(bool b){
+  if(b) {
+    return "1";
+  }
+    return "0";
+}
+
+
 F_return f_return(F_return returns[], int len){
   for(int i = 0; i < len - 1; i++){
     returns[i].next = &returns[i + 1];
@@ -50,7 +72,7 @@ int c = 1;
 // PROTOTYPES
 void sommac(int a, int d, double b, char * * size, double * result);
 void main();
-char * stampa(double a, double b, int c, char * taglia, double risultato);
+char * stampa(char * messaggio);
 
 // PROCEDURES
 void sommac(int a, int d, double b, char * * size, double * result){
@@ -90,7 +112,9 @@ double risultato = 0.0;
 char * valore = "nok";
 
 sommac(a, x, b, &taglia, &risultato);
-valore = stampa(a, b, c, taglia, risultato);
+valore = stampa(_strcat(_strcat(_strcat(_strcat(_strcat(_strcat(_strcat("la somma di ", iToS(a, 1)), " e "), dToS(b, 1)), " incrementata di "), iToS(c, 1)), " è "), taglia));
+
+valore = stampa(_strcat("ed è pari a ", dToS(risultato, 9)));
 
 printf("%s\n", "vuoi continuare? (si/no) - inserisci due volte la risposta");
 _scanf_string(&ans);
@@ -106,7 +130,9 @@ scanf("%lf", &b);
 stdin_flush();
 
 sommac(a, x, b, &taglia, &risultato);
-valore = stampa(a, b, c, taglia, risultato);
+valore = stampa(_strcat(_strcat(_strcat(_strcat(_strcat(_strcat(_strcat("la somma di ", iToS(a, 1)), " e "), dToS(b, 1)), " incrementata di "), iToS(c, 1)), " è "), taglia));
+
+valore = stampa(_strcat(" ed è pari a ", dToS(risultato, 9)));
 
 printf("%s\n", "vuoi continuare? (si/no):\t");
 _scanf_string(&ans);
@@ -118,7 +144,7 @@ printf("%s", "ciao");
 
 
 // FUNCTIONS
-char * stampa(double a, double b, int c, char * taglia, double risultato){
+char * stampa(char * messaggio){
 int i = 0;
 
 while(i < 4){
@@ -126,8 +152,7 @@ printf("\n");
 i = i + 1;
 
 }
-printf("%s%lf%s%lf%s%d%s%s\n", "la somma di ", a, " e ", b, " incrementata di ", c, " è ", taglia);
-printf("%s%lf\n", " ed è pari a ", risultato);
+printf("%s", messaggio);
 return "ok";
 }
 
