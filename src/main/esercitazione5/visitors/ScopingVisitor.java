@@ -57,6 +57,7 @@ import main.esercitazione5.scope.exceptions.FuncMultReturnValScopeException;
 import main.esercitazione5.scope.exceptions.MissingRefSymbolScopeException;
 import main.esercitazione5.scope.exceptions.NotAFuncScopeException;
 import main.esercitazione5.scope.exceptions.NotAProcScopeException;
+import main.esercitazione5.scope.exceptions.NotARefParameterScopeException;
 import main.esercitazione5.scope.exceptions.NumArgsExprIncorrectScopeException;
 import main.esercitazione5.scope.exceptions.NumAssignExprIncorrectScopeException;
 import main.esercitazione5.scope.exceptions.NumReturnExprIncorrectScopeException;
@@ -338,6 +339,12 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
           } else {
             throw new CanNotRefAnExprScopeException(ithExpr.accept(debugVisitor), i + 1,
                 st(v.getId()), v.accept(debugVisitor));
+          }
+        } else {
+          if (ithExpr instanceof IdNode idNode && Boolean.TRUE.equals(idNode.isRef())) {
+            throw new NotARefParameterScopeException(st(idNode), i + 1, st(v.getId()),
+                v.accept(debugVisitor));
+
           }
         }
       }

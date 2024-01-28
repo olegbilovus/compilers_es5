@@ -201,6 +201,9 @@ tabelle di scope, controllo che i Type siano rispettati, genera il linguaggio ta
     - [MissingRefSymbol](src/main/esercitazione5/scope/exceptions/MissingRefSymbolScopeException.java)
       quando si passa un identificatore senza il _@_ come argomento a un parametro
       _out_ di una procedura.
+    - [NotARefParameter](src/main/esercitazione5/scope/exceptions/NotARefParameterScopeException.java)
+      quando si passa un identificatore con il _@_ come argomento a un parametro
+       che non è _out_ in una procedura.
     - [VariableReadOnly](src/main/esercitazione5/scope/exceptions/VariableReadOnlyScopeException.java)
       quando in una funzione si cerca di fare assignment ai parametri della
       funzione.

@@ -5,6 +5,7 @@ import main.esercitazione5.scope.exceptions.CanNotRefAnExprScopeException;
 import main.esercitazione5.scope.exceptions.FuncMultReturnValScopeException;
 import main.esercitazione5.scope.exceptions.MissingRefSymbolScopeException;
 import main.esercitazione5.scope.exceptions.NotAProcScopeException;
+import main.esercitazione5.scope.exceptions.NotARefParameterScopeException;
 import main.esercitazione5.scope.exceptions.NumArgsExprIncorrectScopeException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -46,5 +47,9 @@ public class CallProcOPTest {
     // missing @ symbol in a REF arg
     Assertions.assertThrows(MissingRefSymbolScopeException.class,
         () -> init("proc main(out a: real): var b: real;\\ main(b); endproc"));
+
+    // trying to REF a parameter which is not OUT
+    Assertions.assertThrows(NotARefParameterScopeException.class,
+        () -> init("proc main(a: real): var b: real;\\ main(@b); endproc"));
   }
 }
