@@ -88,6 +88,9 @@ public class SemanticVisitor extends Visitor<Void> {
 
   @Override public Void visit(FunOP v) {
 
+    visitNodeList(v.getProcFunParamOPList());
+    visitNode(v.getBodyOP());
+
     List<Stat> statList = v.getBodyOP().getStatList();
     if (Utility.isListEmpty(statList)) {
       throw new MissingReturnInFuncSemanticException(st(v.getId()));
@@ -101,6 +104,10 @@ public class SemanticVisitor extends Visitor<Void> {
   }
 
   @Override public Void visit(ProcOP v) {
+
+    visitNodeList(v.getProcFunParamOPList());
+    visitNode(v.getBodyOP());
+
     if (v.getBodyOP() != null && !Utility.isListEmpty(v.getBodyOP().getStatList())) {
       for (Stat stat : v.getBodyOP().getStatList()) {
         if (stat instanceof ReturnOP) {
@@ -116,6 +123,10 @@ public class SemanticVisitor extends Visitor<Void> {
   }
 
   @Override public Void visit(BodyOP v) {
+
+    visitNodeList(v.getVarDeclOPList());
+    visitNodeList(v.getStatList());
+
     return null;
   }
 
@@ -224,18 +235,25 @@ public class SemanticVisitor extends Visitor<Void> {
   }
 
   @Override public Void visit(WhileOP v) {
+    visitNode(v.getBody());
     return null;
   }
 
   @Override public Void visit(IfOP v) {
+    visitNode(v.getBody());
+
     return null;
   }
 
   @Override public Void visit(ElifOP v) {
+    visitNode(v.getBody());
+
     return null;
   }
 
   @Override public Void visit(ElseOP v) {
+    visitNode(v.getBody());
+
     return null;
   }
 
@@ -244,6 +262,12 @@ public class SemanticVisitor extends Visitor<Void> {
       for (Node node : nodeList) {
         node.accept(this);
       }
+    }
+  }
+
+  private <T extends Node> void visitNode(T node) {
+    if (node != null) {
+      node.accept(this);
     }
   }
 

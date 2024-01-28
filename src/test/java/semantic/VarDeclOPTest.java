@@ -16,5 +16,8 @@ public class VarDeclOPTest {
     // number of IDs different from number of Constants
     Assertions.assertThrows(NumIdsNumConstsDiffSemanticException.class,
         () -> init("var a ^= 4.5, 5;\\ proc main(): endproc"));
+
+    Assertions.assertThrows(NumIdsNumConstsDiffSemanticException.class,
+        () -> init("var a, b ^= 4.5, 5, 6;\\ proc main(): endproc"));
   }
 }
