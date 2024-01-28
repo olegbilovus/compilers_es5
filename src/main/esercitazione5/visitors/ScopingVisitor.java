@@ -326,6 +326,7 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
     checkCallFunStats(v.getParams(), v.getId().getId(), v);
 
     // check that an Expr is not used as an arg to a parameter with REF declaration
+    // check the use of REF
     if (!Utility.isListEmpty(procEntry.getListType1())) {
       for (int i = 0; i < v.getParams().size(); i++) {
         ScopeType ithParam = procEntry.getListType1().get(i);
