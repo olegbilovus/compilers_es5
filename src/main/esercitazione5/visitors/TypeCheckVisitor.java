@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import main.esercitazione5.StringTable;
 import main.esercitazione5.Utility;
+import main.esercitazione5.ast.ParamAccess;
 import main.esercitazione5.ast.Type;
 import main.esercitazione5.ast.nodes.BodyOP;
 import main.esercitazione5.ast.nodes.FunOP;
@@ -94,7 +95,8 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
     // check that the ReturnOPs return the same Type of Expr as in the FunOp signature
     for (Stat stat : v.getBodyOP().getStatList()) {
       if (stat instanceof ReturnOP returnOP) {
-        checkSameTypeExprList(v.getReturnTypes(), returnOP.getTypeList(), st(v.getId()), returnOP);
+        checkSameTypeExprList(v.getReturnTypes(), returnOP.getTypeList(), null, st(v.getId()),
+            returnOP);
       }
     }
 
@@ -344,9 +346,11 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
   @Override public List<Type> visit(CallFunOP v) {
     List<Type> typeListExpr = nodeTypeList(v.getExprList());
     ScopeEntry fun = v.getScopeTable().lookup(v.getId().getId(), stringTable);
-    List<Type> typeListFun = fun.getListType1().stream().map(ScopeType::type).toList();
+    List<ScopeType> paramsFun = fun.getListType1();
+    List<ParamAccess> paramAccessList = paramsFun.stream().map(ScopeType::paramAccess).toList();
+    List<Type> typeListFun = paramsFun.stream().map(ScopeType::type).toList();
 
-    checkSameTypeExprList(typeListFun, typeListExpr, st(v.getId()), v);
+    checkSameTypeExprList(typeListFun, typeListExpr, paramAccessList, st(v.getId()), v);
 
     // this node returns the Fun's return type, not the parameters
     v.setTypeList(fun.getListType2());
@@ -356,26 +360,28 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
 
   @Override public List<Type> visit(CallProcOP v) {
     List<Type> typeListExpr = nodeTypeList(v.getParams());
-    List<Type> typeListProc =
-        v.getScopeTable().lookup(v.getId().getId(), stringTable).getListType1().stream()
-            .map(ScopeType::type).toList();
+    List<ScopeType> paramsProc =
+        v.getScopeTable().lookup(v.getId().getId(), stringTable).getListType1();
+    List<ParamAccess> paramAccessList = paramsProc.stream().map(ScopeType::paramAccess).toList();
+    List<Type> typeListProc = paramsProc.stream().map(ScopeType::type).toList();
 
-    checkSameTypeExprList(typeListProc, typeListExpr, st(v.getId()), v);
+    checkSameTypeExprList(typeListProc, typeListExpr, paramAccessList, st(v.getId()), v);
 
     // proc has not a return
     return Collections.emptyList();
   }
 
-  private void checkSameTypeExprList(List<Type> expectedTypes, List<Type> givenTypes, String where,
-      Node v) {
+  private void checkSameTypeExprList(List<Type> expectedTypes, List<Type> givenTypes,
+      List<ParamAccess> paramAccessList, String where, Node v) {
     if (!Utility.isListEmpty(expectedTypes)) {
       for (int i = 0; i < expectedTypes.size(); i++) {
         Type expected = expectedTypes.get(i);
         Type given = givenTypes.get(i);
-        if (expected != given && !(expected == Type.REAL
-            && given == Type.INTEGER /* allow int to be used with real */)) {
+        boolean out = paramAccessList != null && paramAccessList.get(i) == ParamAccess.OUT;
+        if ((expected != given && !(expected == Type.REAL && given == Type.INTEGER && !out /*
+        allow int to double but no OUT */))) {
           throw new TypeArgsExprIncorrectTypeCheckException(v.accept(debugVisitor), where, i + 1,
-              expected, given);
+              expected, out, given);
         }
       }
     }
@@ -400,7 +406,7 @@ public class TypeCheckVisitor extends Visitor<List<Type>> {
     List<Type> typeListIDs = nodeTypeList(v.getIdNodeList());
     List<Type> typeListExpr = nodeTypeList(v.getExprList());
 
-    checkSameTypeExprList(typeListIDs, typeListExpr, AssignOP.class.getSimpleName(), v);
+    checkSameTypeExprList(typeListIDs, typeListExpr, null, AssignOP.class.getSimpleName(), v);
 
     return Collections.emptyList();
   }

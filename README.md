@@ -230,6 +230,7 @@ tabelle di scope, controllo che i Type siano rispettati, genera il linguaggio ta
       quando si passa un Expr che non ha valore Boolean dove ci si aspetta un Boolean.
     - [TypeArgsExprIncorrect](src/main/esercitazione5/typecheck/exceptions/TypeArgsExprIncorrectTypeCheckException.java)
       quando una delle Expr passate non ha in Type atteso.
+      Integer si può usare quando c'è Real ma solo se il Real non è un parametro OUT.
 
 ## Programma Math in Toy2
 

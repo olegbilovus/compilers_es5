@@ -54,6 +54,10 @@ public class ParamsTest {
     Assertions.assertThrows(TypeArgsExprIncorrectTypeCheckException.class, () -> init(
         "func f(a: real) -> real: return 1.2; endfunc proc main(b: real): b^= f(true); endproc"));
 
+    // out integer, but expected out real
+    Assertions.assertThrows(TypeArgsExprIncorrectTypeCheckException.class,
+        () -> init("proc main(out a: real): var i ^= 1;\\ main(@i); endproc"));
+
 
   }
 }
