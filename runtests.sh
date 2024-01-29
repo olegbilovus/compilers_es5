@@ -39,7 +39,7 @@ do
 			fi
 			echo "" >> $1.report.txt
 			echo diff -w "${TESTIN/_in/_out}" $TESTOUT >> $1.report.txt
-			diff -w "${TESTIN/_in/_out}" $TESTOUT >> $1.report.txt
+			diff -w --color=always "${TESTIN/_in/_out}" $TESTOUT >> $1.report.txt
 		done
 	else 
 		echo "$OUTPUTDIR/$TESTNAME.c non esiste" >> $1.report.txt
