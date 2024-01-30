@@ -23,7 +23,7 @@ public class Utility {
 
   public static StringReader readFile(String dir, String file) throws IOException {
     String filePath =
-        dir + File.separator + "tests" + File.separator + file;
+        dir + File.separator + "test_files" + File.separator + file;
     return new StringReader(Files.readString(Paths.get(filePath)));
   }
 
