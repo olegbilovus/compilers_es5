@@ -43,9 +43,12 @@ import main.esercitazione5.ast.nodes.stat.CallProcOP;
 import main.esercitazione5.ast.nodes.stat.ElifOP;
 import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
+import main.esercitazione5.ast.nodes.stat.LetLoopOP;
+import main.esercitazione5.ast.nodes.stat.OtherwiseOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
 import main.esercitazione5.ast.nodes.stat.Stat;
+import main.esercitazione5.ast.nodes.stat.WhenOP;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
 import main.esercitazione5.scope.ScopeEntry;
@@ -484,6 +487,35 @@ public class ScopingVisitor extends Visitor<ScopeTable> {
 
   @Override public ScopeTable visit(ElseOP v) {
     ScopeTable scopeTable = new ScopeTable(stack.getFirst());
+    v.setScopeTable(scopeTable);
+    nodeTable(scopeTable, v.getBody());
+
+    return scopeTable;
+  }
+
+  @Override public ScopeTable visit(LetLoopOP v) {
+    ScopeTable scopeTable = new ScopeTable(stack.getFirst());
+    v.setScopeTable(scopeTable);
+    nodeTableList(scopeTable, v.getDeclOP());
+    nodeTableList(scopeTable, v.getWhenOPList());
+    nodeTable(scopeTable, v.getOtherwiseOP());
+
+    return scopeTable;
+  }
+
+  @Override public ScopeTable visit(WhenOP v) {
+    checkOneReturnFunction(v.getCondition());
+    v.getCondition().accept(this);
+
+    ScopeTable scopeTable = stack.getFirst();
+    v.setScopeTable(scopeTable);
+    nodeTable(scopeTable, v.getBody());
+
+    return scopeTable;
+  }
+
+  @Override public ScopeTable visit(OtherwiseOP v) {
+    ScopeTable scopeTable = stack.getFirst();
     v.setScopeTable(scopeTable);
     nodeTable(scopeTable, v.getBody());
 

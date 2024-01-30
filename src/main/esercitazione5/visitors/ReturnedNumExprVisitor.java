@@ -34,8 +34,11 @@ import main.esercitazione5.ast.nodes.stat.CallProcOP;
 import main.esercitazione5.ast.nodes.stat.ElifOP;
 import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
+import main.esercitazione5.ast.nodes.stat.LetLoopOP;
+import main.esercitazione5.ast.nodes.stat.OtherwiseOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
+import main.esercitazione5.ast.nodes.stat.WhenOP;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
 
@@ -193,6 +196,18 @@ public class ReturnedNumExprVisitor extends Visitor<Integer> {
   }
 
   @Override public Integer visit(ElseOP v) {
+    return 0;
+  }
+
+  @Override public Integer visit(LetLoopOP v) {
+    return 0;
+  }
+
+  @Override public Integer visit(WhenOP v) {
+    return 0;
+  }
+
+  @Override public Integer visit(OtherwiseOP v) {
     return 0;
   }
 }

@@ -37,15 +37,19 @@ import main.esercitazione5.ast.nodes.stat.CallProcOP;
 import main.esercitazione5.ast.nodes.stat.ElifOP;
 import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
+import main.esercitazione5.ast.nodes.stat.LetLoopOP;
+import main.esercitazione5.ast.nodes.stat.OtherwiseOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
 import main.esercitazione5.ast.nodes.stat.Stat;
+import main.esercitazione5.ast.nodes.stat.WhenOP;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
 import main.esercitazione5.semantic.exceptions.MissingMainProcSemanticException;
 import main.esercitazione5.semantic.exceptions.MissingReturnInFuncSemanticException;
 import main.esercitazione5.semantic.exceptions.NumIdsNumConstsDiffSemanticException;
 import main.esercitazione5.semantic.exceptions.ReturnInProcSemanticException;
+import main.esercitazione5.semantic.exceptions.VarDeclInLetLoopSemanticException;
 
 public class SemanticVisitor extends Visitor<Void> {
 
@@ -253,6 +257,37 @@ public class SemanticVisitor extends Visitor<Void> {
 
   @Override public Void visit(ElseOP v) {
     visitNode(v.getBody());
+
+    return null;
+  }
+
+  @Override public Void visit(LetLoopOP v) {
+    visitNodeList(v.getDeclOP());
+    visitNodeList(v.getWhenOPList());
+    visitNode(v.getOtherwiseOP());
+
+    return null;
+  }
+
+  @Override public Void visit(WhenOP v) {
+
+    visitNode(v.getCondition());
+    visitNode(v.getBody());
+
+    if(!Utility.isListEmpty(v.getBody().getVarDeclOPList())){
+      throw new VarDeclInLetLoopSemanticException(v.accept(debugVisitor));
+    }
+
+    return null;
+  }
+
+  @Override public Void visit(OtherwiseOP v) {
+
+    visitNode(v.getBody());
+
+    if(!Utility.isListEmpty(v.getBody().getVarDeclOPList())){
+      throw new VarDeclInLetLoopSemanticException(v.accept(debugVisitor));
+    }
 
     return null;
   }

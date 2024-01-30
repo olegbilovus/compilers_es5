@@ -25,9 +25,9 @@ public class RealConstTest {
     Symbol token = lexer.next_token();
     Assertions.assertEquals(sym.INTEGER_CONST, token.sym);
     token = lexer.next_token();
-    Assertions.assertEquals(sym.error, token.sym);
+    Assertions.assertEquals(sym.DOT, token.sym);
 
     token = LexerUtility.token(".00005");
-    Assertions.assertEquals(sym.error, token.sym);
+    Assertions.assertEquals(sym.DOT, token.sym);
   }
 }

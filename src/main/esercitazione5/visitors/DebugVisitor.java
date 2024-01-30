@@ -40,8 +40,11 @@ import main.esercitazione5.ast.nodes.stat.CallProcOP;
 import main.esercitazione5.ast.nodes.stat.ElifOP;
 import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
+import main.esercitazione5.ast.nodes.stat.LetLoopOP;
+import main.esercitazione5.ast.nodes.stat.OtherwiseOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
+import main.esercitazione5.ast.nodes.stat.WhenOP;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
 
@@ -367,6 +370,31 @@ public class DebugVisitor extends Visitor<String> {
     StringBuilder toReturn = new StringBuilder("else\n ");
 
     genNode(toReturn, v.getBody());
+
+    return toReturn.toString();
+  }
+
+  @Override public String visit(LetLoopOP v) {
+    StringBuilder toReturn = new StringBuilder("let ");
+    genList(toReturn, v.getDeclOP(), "");
+    toReturn.append(";\ngo");
+    genList(toReturn, v.getWhenOPList(), "\n");
+    toReturn.append(v.getOtherwiseOP().accept(this)).append("\n");
+
+    return toReturn.toString();
+  }
+
+  @Override public String visit(WhenOP v) {
+    StringBuilder toReturn = new StringBuilder(".when (");
+    toReturn.append(v.getCondition().accept(this)).append(").loop{");
+    toReturn.append(v.getBody().accept(this)).append("}\n");
+
+    return toReturn.toString();
+  }
+
+  @Override public String visit(OtherwiseOP v) {
+    StringBuilder toReturn = new StringBuilder(".otherwise.do {");
+    toReturn.append(v.getBody().accept(this)).append("};\n");
 
     return toReturn.toString();
   }

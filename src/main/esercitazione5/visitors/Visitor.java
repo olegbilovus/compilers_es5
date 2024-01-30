@@ -34,8 +34,11 @@ import main.esercitazione5.ast.nodes.stat.CallProcOP;
 import main.esercitazione5.ast.nodes.stat.ElifOP;
 import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
+import main.esercitazione5.ast.nodes.stat.LetLoopOP;
+import main.esercitazione5.ast.nodes.stat.OtherwiseOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
+import main.esercitazione5.ast.nodes.stat.WhenOP;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
 
@@ -118,6 +121,12 @@ public abstract class Visitor<T> {
   public abstract T visit(ElifOP v);
 
   public abstract T visit(ElseOP v);
+
+  public abstract T visit(LetLoopOP v);
+
+  public abstract T visit(WhenOP v);
+
+  public abstract T visit(OtherwiseOP v);
 
   public String st(IdNode id) {
     return stringTable.get(id.getId());

@@ -72,6 +72,13 @@ Digits = {Digit}+
   "while"                        { return symbol(sym.WHILE); }
   "do"                           { return symbol(sym.DO); }
   "endwhile"                     { return symbol(sym.ENDWHILE); }
+  "let"                          { return symbol(sym.LET); }
+  "go"                           { return symbol(sym.GO); }
+  "when"                         { return symbol(sym.WHEN); }
+  "loop"                         { return symbol(sym.LOOP); }
+  "."                            { return symbol(sym.DOT); }
+  "otherwise"                    { return symbol(sym.OTHERWHISE); }
+
 }
 
 /* tokens */
@@ -94,6 +101,8 @@ Digits = {Digit}+
   "->"                           { return symbol(sym.TYPERETURN); }
   "("                            { return symbol(sym.LPAR); }
   ")"                            { return symbol(sym.RPAR); }
+  "{"                            { return symbol(sym.LCURV); }
+  "}"                            { return symbol(sym.RCURV); }
   "-->"                          { return symbol(sym.WRITE); }
   "-->!"                         { return symbol(sym.WRITERETURN); }
   "<--"                          { return symbol(sym.READ); }

@@ -9,7 +9,7 @@ import java.util.List;
 terminal VAR, ENDVAR, COLON, ASSIGN, SEMI, COMMA, TRUE, FALSE, REAL, INTEGER, STRING, BOOLEAN, RETURN,
 FUNCTION, TYPERETURN, ENDFUNCTION, LPAR, RPAR, PROCEDURE, ENDPROCEDURE, REF, OUT, WRITE, WRITERETURN,
 DOLLARSIGN, READ, IF, THEN, ELSE, ENDIF, ELIF, WHILE, DO, ENDWHILE, PLUS, MINUS, TIMES, DIV, EQ,
-NE, LT, LE, GT, GE, AND, OR, NOT;
+NE, LT, LE, GT, GE, AND, OR, NOT, LET, GO, WHEN, LOOP, DOT, OTHERWHISE, LCURV, RCURV;
 
 terminal Integer ID, STRING_CONST;
 terminal String REAL_CONST, INTEGER_CONST;
@@ -37,6 +37,11 @@ nonterminal IfOP IfStat;
 nonterminal ElifOP Elif;
 nonterminal ElseOP Else;
 nonterminal List<ElifOP> Elifs;
+nonterminal LetLoopOP LetLoop;
+nonterminal WhenOP When;
+nonterminal List<WhenOP> Whens;
+nonterminal OtherwiseOP Otherwise;
+
 
 terminal UMINUS;
 precedence left AND, OR;
@@ -173,7 +178,24 @@ Stat ::= Ids:ii ASSIGN Exprs:ee SEMI // [Ids should be the same number of Exprs,
          {: RESULT = f; :}
        | WhileStat:w SEMI
          {: RESULT = w; :}
+       | LetLoop:l SEMI
+         {: RESULT = l; :}
 ;
+
+LetLoop ::= LET VarDecl:v SEMI GO Whens:ww Otherwise:o
+            {: RESULT = new LetLoopOP(v, ww, o); :}
+;         /* [Expr only Boolean] */  /* [No VarDecls inside Body] */
+When ::= DOT WHEN LPAR Expr:e RPAR DOT LOOP LCURV Body:b RCURV
+         {: RESULT = new WhenOP(e, b); :}
+;
+Whens ::= When:w1 When:w2
+          {: RESULT = List.of(w1, w2); :}
+;
+   /* [No VarDecls inside Body] */
+Otherwise ::= DOT OTHERWHISE DOT DO LCURV Body:b RCURV
+            {: RESULT = new OtherwiseOP(b); :}
+;
+
 OArgs ::= StringConCat:e OArgs:ee
            {: RESULT = new ArrayList<Expr>(); RESULT.add(e); RESULT.addAll(ee); :}
          | StringConCat:e

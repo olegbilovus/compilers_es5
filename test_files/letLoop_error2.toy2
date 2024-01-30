@@ -1,0 +1,10 @@
+% condition not a Boolean%
+
+proc main():
+  let var a, b ^= 1, 2;\ ;
+  go.when(a+b).loop{-->! "uno"; a ^= a - 1;}
+    .when(a<b).loop{-->! "due"; a ^= a + 1;}
+
+    .otherwise.do{-->! "sono uguali";};
+
+endproc

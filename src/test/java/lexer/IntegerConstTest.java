@@ -21,6 +21,6 @@ public class IntegerConstTest {
   @Test
   public void invalid() throws IOException {
     Symbol token = LexerUtility.token(".5");
-    Assertions.assertEquals(sym.error, token.sym);
+    Assertions.assertEquals(sym.DOT, token.sym);
   }
 }

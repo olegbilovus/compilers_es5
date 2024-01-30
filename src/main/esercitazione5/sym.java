@@ -8,13 +8,15 @@ package main.esercitazione5;
 /** CUP generated interface containing symbol constants. */
 public interface sym {
   /* terminals */
+  public static final int WHEN = 51;
   public static final int FUNCTION = 15;
   public static final int GE = 45;
-  public static final int UMINUS = 53;
+  public static final int UMINUS = 61;
   public static final int ENDVAR = 3;
-  public static final int INTEGER_CONST = 52;
+  public static final int INTEGER_CONST = 60;
   public static final int INTEGER = 11;
   public static final int SEMI = 6;
+  public static final int LCURV = 55;
   public static final int OUT = 23;
   public static final int MINUS = 37;
   public static final int REF = 22;
@@ -30,10 +32,12 @@ public interface sym {
   public static final int COMMA = 7;
   public static final int WRITERETURN = 25;
   public static final int DIV = 39;
+  public static final int LOOP = 52;
   public static final int PLUS = 36;
   public static final int ASSIGN = 5;
   public static final int IF = 28;
-  public static final int ID = 49;
+  public static final int ID = 57;
+  public static final int DOT = 53;
   public static final int ENDWHILE = 35;
   public static final int LE = 43;
   public static final int EOF = 0;
@@ -41,6 +45,7 @@ public interface sym {
   public static final int RETURN = 14;
   public static final int TRUE = 8;
   public static final int error = 1;
+  public static final int RCURV = 56;
   public static final int EQ = 40;
   public static final int DOLLARSIGN = 26;
   public static final int REAL = 10;
@@ -50,18 +55,21 @@ public interface sym {
   public static final int ELSE = 30;
   public static final int READ = 27;
   public static final int WHILE = 33;
-  public static final int REAL_CONST = 51;
+  public static final int LET = 49;
+  public static final int REAL_CONST = 59;
+  public static final int OTHERWHISE = 54;
   public static final int THEN = 29;
   public static final int NE = 41;
   public static final int LPAR = 18;
   public static final int STRING = 12;
   public static final int FALSE = 9;
-  public static final int STRING_CONST = 50;
+  public static final int STRING_CONST = 58;
   public static final int GT = 44;
   public static final int VAR = 2;
   public static final int ELIF = 32;
   public static final int PROCEDURE = 20;
   public static final int DO = 34;
+  public static final int GO = 50;
   public static final String[] terminalNames = new String[] {
   "EOF",
   "error",
@@ -112,6 +120,14 @@ public interface sym {
   "AND",
   "OR",
   "NOT",
+  "LET",
+  "GO",
+  "WHEN",
+  "LOOP",
+  "DOT",
+  "OTHERWHISE",
+  "LCURV",
+  "RCURV",
   "ID",
   "STRING_CONST",
   "REAL_CONST",

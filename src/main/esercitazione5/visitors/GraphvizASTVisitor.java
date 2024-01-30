@@ -41,9 +41,12 @@ import main.esercitazione5.ast.nodes.stat.CallProcOP;
 import main.esercitazione5.ast.nodes.stat.ElifOP;
 import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
+import main.esercitazione5.ast.nodes.stat.LetLoopOP;
+import main.esercitazione5.ast.nodes.stat.OtherwiseOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
 import main.esercitazione5.ast.nodes.stat.Stat;
+import main.esercitazione5.ast.nodes.stat.WhenOP;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
 
@@ -407,6 +410,45 @@ public class GraphvizASTVisitor extends Visitor<String> {
   @Override public String visit(ElseOP v) {
     StringBuilder toReturn = new StringBuilder();
     toReturn.append(node(ElseOP.class)).append(edge());
+    stackParent.push(nodeCount);
+
+    genNode(toReturn, v.getBody());
+
+    stackParent.pop();
+
+    return toReturn.toString();
+  }
+
+  @Override public String visit(LetLoopOP v) {
+    StringBuilder toReturn = new StringBuilder();
+    toReturn.append(node(LetLoopOP.class)).append(edge());
+    stackParent.push(nodeCount);
+
+    genList(toReturn, v.getDeclOP(), VarDeclOP.class);
+    genList(toReturn, v.getWhenOPList(), WhenOP.class);
+    genNode(toReturn, v.getOtherwiseOP());
+
+    stackParent.pop();
+
+    return toReturn.toString();
+  }
+
+  @Override public String visit(WhenOP v) {
+    StringBuilder toReturn = new StringBuilder();
+    toReturn.append(node(WhenOP.class)).append(edge());
+    stackParent.push(nodeCount);
+
+    genNode(toReturn, v.getCondition());
+    genNode(toReturn, v.getBody());
+
+    stackParent.pop();
+
+    return toReturn.toString();
+  }
+
+  @Override public String visit(OtherwiseOP v) {
+    StringBuilder toReturn = new StringBuilder();
+    toReturn.append(node(OtherwiseOP.class)).append(edge());
     stackParent.push(nodeCount);
 
     genNode(toReturn, v.getBody());

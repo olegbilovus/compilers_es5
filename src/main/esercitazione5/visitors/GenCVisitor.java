@@ -42,8 +42,11 @@ import main.esercitazione5.ast.nodes.stat.CallProcOP;
 import main.esercitazione5.ast.nodes.stat.ElifOP;
 import main.esercitazione5.ast.nodes.stat.ElseOP;
 import main.esercitazione5.ast.nodes.stat.IfOP;
+import main.esercitazione5.ast.nodes.stat.LetLoopOP;
+import main.esercitazione5.ast.nodes.stat.OtherwiseOP;
 import main.esercitazione5.ast.nodes.stat.ReadOP;
 import main.esercitazione5.ast.nodes.stat.ReturnOP;
+import main.esercitazione5.ast.nodes.stat.WhenOP;
 import main.esercitazione5.ast.nodes.stat.WhileOP;
 import main.esercitazione5.ast.nodes.stat.WriteOP;
 
@@ -567,6 +570,31 @@ public class GenCVisitor extends Visitor<String> {
     toReturn.append("}");
 
     return toReturn.toString();
+  }
+
+  @Override public String visit(LetLoopOP v) {
+    StringBuilder toReturn = new StringBuilder("{\n ");
+
+    genList(toReturn, v.getDeclOP(), "");
+    genList(toReturn, v.getWhenOPList(), "");
+    genNode(toReturn, v.getOtherwiseOP());
+    toReturn.append("}\n");
+
+    return toReturn.toString();
+  }
+
+  @Override public String visit(WhenOP v) {
+    StringBuilder toReturn = new StringBuilder("while(");
+    toReturn.append(v.getCondition().accept(this)).append("){\n");
+
+    genNode(toReturn, v.getBody());
+    toReturn.append("}");
+
+    return toReturn.toString();
+  }
+
+  @Override public String visit(OtherwiseOP v) {
+    return v.getBody().accept(this);
   }
 
   private <T extends Node> void genNode(StringBuilder toReturn, T node) {
