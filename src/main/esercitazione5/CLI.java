@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java_cup.runtime.Symbol;
 import main.esercitazione5.ast.nodes.ProgramOP;
 import main.esercitazione5.visitors.DebugVisitor;
 import main.esercitazione5.visitors.GenCVisitor;
@@ -33,7 +34,7 @@ public class CLI {
 
     final String[] availableVisitors =
         {"gen_c", "type_check", "graphviz_scope", "scope_check", "semantic_check", "graphviz_ast",
-            "debug"};
+            "debug", "lexer"};
 
     MutuallyExclusiveGroup visitorGroup = parser.addMutuallyExclusiveGroup("Visitor type");
     visitorGroup.addArgument("--" + availableVisitors[0]).action(Arguments.storeTrue())
@@ -51,6 +52,8 @@ public class CLI {
     visitorGroup.addArgument("--" + availableVisitors[6]).action(Arguments.storeTrue()).help(
         "Debug the Lexer and Parser. The input will run on both "
             + "and produce the equivalent of source in Toy2.");
+    visitorGroup.addArgument("--" + availableVisitors[7]).action(Arguments.storeTrue())
+        .help("Run the Lexer. Print the Tokens steam and the String Table.");
 
     Namespace ns = parser.parseArgsOrFail(args);
 
@@ -67,15 +70,16 @@ public class CLI {
     }
 
     Yylex lexer = new Yylex(reader);
-    parser p = new parser(lexer);
-    ProgramOP ast;
-    if (Boolean.TRUE.equals(ns.getBoolean("v"))) {
-      ast = (ProgramOP) p.debug_parse().value;
-    } else {
-      ast = (ProgramOP) p.parse().value;
-    }
     StringTable st = lexer.getStringTable();
-
+    ProgramOP ast = null;
+    if (Boolean.FALSE.equals(ns.getBoolean(availableVisitors[7]))) {
+      parser p = new parser(lexer);
+      if (Boolean.TRUE.equals(ns.getBoolean("v"))) {
+        ast = (ProgramOP) p.debug_parse().value;
+      } else {
+        ast = (ProgramOP) p.parse().value;
+      }
+    }
     final boolean[] chosenVisitor = new boolean[availableVisitors.length];
     for (int i = 0; i < availableVisitors.length; i++) {
       Boolean val = ns.getBoolean(availableVisitors[i]);
@@ -105,6 +109,14 @@ public class CLI {
       visitorRes = ast.accept(new GraphvizASTVisitor(st));
     } else if (chosenVisitor[6]) {
       visitorRes = ast.accept(new DebugVisitor(st));
+    } else if (chosenVisitor[7]) {
+      visitorRes = "Tokens:";
+      Symbol token;
+      while ((token = lexer.next_token()).sym != sym.EOF) {
+        visitorRes += LexerTester.tokenToString(token) + " ";
+      }
+      visitorRes += "<" + sym.terminalNames[sym.EOF] + ">";
+      visitorRes += "\n\nString table:\n" + lexer.getStringTable();
     } else {
       ast.accept(new SemanticVisitor(st));
       ast.accept(new ScopingVisitor(st));

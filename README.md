@@ -264,10 +264,8 @@ java -jar bilovus_es5-1.0-SNAPSHOT.jar
 
 Si possono aggiungere opzioni quando si esegue il programma in base alle necessità.
 ```
-usage: Toy2 to stages of a compiler
-       [-h] [-i I] [-o O] [-v] [--gen_c | --type_check |
-       --graphviz_scope | --scope_check | --semantic_check | --graphviz_ast
-       | --debug]
+usage: Toy2 to stages of a compiler 
+       [-h] [-i I] [-o O] [-v] [--gen_c | --type_check | --graphviz_scope | --scope_check | --semantic_check | --graphviz_ast | --debug | --lexer]
 
 Translate a Toy2 source to different stages of a compiler.
 
@@ -280,11 +278,10 @@ named arguments:
 Visitor type:
   --gen_c                (default) Generate the C code.
   --type_check           Check that there is no type errors.
-  --graphviz_scope       Create a Graphviz Tables  diagram  in dot language
-                         which shows all the scoping tables.
+  --graphviz_scope       Create a Graphviz Tables diagram in dot language which shows all the scoping tables.
   --scope_check          Check that there is no scoping errors.
   --semantic_check       Check that there is no semantic errors.
   --graphviz_ast         Create a Graphviz AST diagram in dot language.
-  --debug                Debug the Lexer and Parser.  The input will run on
-                         both and produce the equivalent of source in Toy2.
+  --debug                Debug the Lexer and Parser. The input will run on both and produce the equivalent of source in Toy2.
+  --lexer                Run the Lexer. Print the Tokens steam and the String Table.
 ```
